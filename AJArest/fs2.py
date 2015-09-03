@@ -34,11 +34,11 @@ __license__ = "Proprietary"
 
 import sys
 import threading
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re # "now you have two problems" -- jwz
 
-from base import *
+from .base import *
 
 class Client(BaseClient):
     __author__ = "Support <support@aja.com>"
@@ -73,16 +73,16 @@ $ python
             raise UnresponsiveTargetError
         except Exception as e:
             print("Error in Client constructor")
-            print e
+            print(e)
             raise UnresponsiveTargetError
 
     def setParameter(self, param, value):
         """ Set a single parameter value. """
         result = (None, "")
         f = None
-        params = urllib.urlencode({'paramName':param, 'newValue' : value})
+        params = urllib.parse.urlencode({'paramName':param, 'newValue' : value})
         try:
-            f = urllib2.urlopen(self.url + '/config', params, timeout=5)
+            f = urllib.request.urlopen(self.url + '/config', params, timeout=5)
             result = (f.getcode(), f.read())
             f.close()
         except:
@@ -97,7 +97,7 @@ $ python
         result = (None, "")
         f = None
         try:
-            f = urllib2.urlopen(self.url + '/config?action=get&paramid=' + param_id, timeout=5)
+            f = urllib.request.urlopen(self.url + '/config?action=get&paramid=' + param_id, timeout=5)
             result = (f.getcode(), f.read())
             f.close()
 
@@ -130,57 +130,57 @@ $ python
                 response_value = self.getValue(response) # getValue() has disappeared
                 result = (code, response_value)   
             else:
-                print('getParameter(' + param_id + ') failed;  http code = ' + str(code))
+                print(('getParameter(' + param_id + ') failed;  http code = ' + str(code)))
 
         # Unnecessary exception fondling
         except UnresponsiveTargetError:
             raise UnresponsiveTargetError
         except:
-            print "exception in getParameter()"
+            print("exception in getParameter()")
             raise
             
         return result
 
 
 def usage():
-    print __doc__
+    print(__doc__)
 
 def demo(url):
     """ Demonstrates how to use the client and grabs some useful information. """
     client = Client(url)
 
-    print "Beginning demo. Pausing between actions for readability."
+    print("Beginning demo. Pausing between actions for readability.")
 
     from time import sleep
     sleep (2)
 
-    print "Current firmware version is: ", client.getFirmwareVersion()
+    print("Current firmware version is: ", client.getFirmwareVersion())
 
     sleep(2)
 
-    print
-    print "These are all the parameters which are visible to the API"
-    print
+    print()
+    print("These are all the parameters which are visible to the API")
+    print()
 
     sleep(2)
 
     readableParameters = client.getReadableParameters()
     for param in readableParameters:
-        for param_id, description in param.items():
-            print "%s: %s" % (param_id, description)
+        for param_id, description in list(param.items()):
+            print("%s: %s" % (param_id, description))
 
     sleep(2)
 
-    print
-    print "These are all of the parameters which can possibly be set."
-    print
+    print()
+    print("These are all of the parameters which can possibly be set.")
+    print()
 
     sleep(2)
 
     writeableParams = client.getWriteableParameters()
     for param in writeableParams:
-        for param_id, description in param.items():
-            print "%s: %s" % (param_id, description)
+        for param_id, description in list(param.items()):
+            print("%s: %s" % (param_id, description))
 
 
 def main(argv):

@@ -12,7 +12,7 @@ __license__ = "Proprietary"
 
 import sys
 import threading
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re # "now you have two problems" -- jwz
 
@@ -53,16 +53,16 @@ $ python
         try:
             self.firmwareVersion = self.__getFirmwareVersion(versionParam)
         except IOError as e:
-            print "IOError trying to communicate with target in BaseClient constructor"
-            print e
+            print("IOError trying to communicate with target in BaseClient constructor")
+            print(e)
             raise UnresponsiveTargetError
         except Exception as e:
-            print "Error trying to communicate with target in BaseClient constructor"
-            print e
+            print("Error trying to communicate with target in BaseClient constructor")
+            print(e)
             raise UnresponsiveTargetError
         
         if self.firmwareVersion < self.encodeVersion(supportedFirmwareVersion):
-            print("Version must be at least " + supportedFirmwareVersion + "; your version is " + self.decodeVersion(self.firmwareVersion))
+            print(("Version must be at least " + supportedFirmwareVersion + "; your version is " + self.decodeVersion(self.firmwareVersion)))
             raise UnsupportedFirmwareVersionError(self.decodeVersion(self.firmwareVersion) + " < " + supportedFirmwareVersion)
 
         self.rawParametersCache = None
@@ -89,9 +89,9 @@ $ python
             'paramid': param_id,
             'value' : value,         
             }
-        noway = self.url + '/config?' + urllib.urlencode(data)
+        noway = self.url + '/config?' + urllib.parse.urlencode(data)
         try:
-            f = urllib.urlopen(noway)
+            f = urllib.request.urlopen(noway)
             result = (f.getcode(), f.read())
         except:
             raise
@@ -104,13 +104,13 @@ $ python
         result = (None, "")
         f = None
         try:
-            req = urllib2.Request(url=self.url + '/options?' + param_id)
-            f = urllib2.urlopen(req, timeout=5)
+            req = urllib.request.Request(url=self.url + '/options?' + param_id)
+            f = urllib.request.urlopen(req, timeout=5)
             result = (f.getcode(), f.read())
             f.close()
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             print("Error in getRawParameter()")
-            print e
+            print(e)
             raise UnresponsiveTargetError("There was an error: %r" % e)
         except:
             if f is not None:
@@ -147,9 +147,9 @@ $ python
         """
         result = None
         try:
-            result = json.loads(response)
+            result = json.loads(response.decode('utf-8'))
         except:
-            result = json.loads(self.cleanResponse(response))
+            result = json.loads(self.cleanResponse(response.decode('utf-8')))
         return result
 
     def getSelected(self, response):
@@ -200,7 +200,7 @@ $ python
         """
         This is primarily used to get timecode.
         """
-        events_stream = urllib2.urlopen(self.url + "/json?action=wait_for_config_events&configid=0&connectionid=%s" % connectionid, timeout=5)
+        events_stream = urllib.request.urlopen(self.url + "/json?action=wait_for_config_events&configid=0&connectionid=%s" % connectionid, timeout=5)
         if (events_stream.getcode() == self.__success) :
             events_json = events_stream.read()
             events = json.loads( events_json )
@@ -212,7 +212,7 @@ $ python
         This is only used for listening for event streams (primarily timecode).
         """
         result = None
-        connect_stream = urllib2.urlopen(self.url + "/json?action=connect&configid=0", timeout=5)
+        connect_stream = urllib.request.urlopen(self.url + "/json?action=connect&configid=0", timeout=5)
         if (connect_stream.getcode() == self.__success) :
             connect_json = connect_stream.read()
             result = json.loads( connect_json )
@@ -236,7 +236,7 @@ $ python
             response = []
             f = None
             try:
-                f = urllib2.urlopen(self.url + '/descriptors?paramid=*', timeout=30)    # It can take longer than 5 seconds to get all of the Descriptors.
+                f = urllib.request.urlopen(self.url + '/descriptors?paramid=*', timeout=30)    # It can take longer than 5 seconds to get all of the Descriptors.
                 response = (f.getcode(), f.read())
                 f.close()
             except:
@@ -249,7 +249,7 @@ $ python
                     rawParams = self.asPython(response[1])
                     self.rawParametersCache = rawParams
                 except:
-                    print "Could not parse param list!"
+                    print("Could not parse param list!")
                     raise
         return rawParams
 
@@ -332,7 +332,7 @@ $ python
                 version_string = response
                 has_a_pulse = True
             else:
-                print('Error code ' + code + ' from getParameter(' + self.version_param + ')')
+                print(('Error code ' + code + ' from getParameter(' + self.version_param + ')'))
         except Exception as e:
             #print(e)   # This print is not always welcome...
             pass    # sometimes (during reboot), an exception may be expected, and need not be printed to the console.

@@ -10,11 +10,11 @@ for i in range(1,17):
 	
 	source = c.getParameter('eParamID_XPT_Destination%i_Status' % (i))[1]
 
-	sourcename = u"%3s: " % (source)
+	sourcename = "%3s: " % (source)
 	sourcename += c.getParameter('eParamID_XPT_Source%s_Line_1' % (source))[1]
-	sourcename += u' '
+	sourcename += ' '
 	sourcename += c.getParameter('eParamID_XPT_Source%s_Line_2' % (source))[1]
 
-	print "%-15s = %s" % (name, sourcename)
+	print("%-15s = %s" % (name, sourcename))
 
 # print c.setParameter('eParamID_XPT_Destination3_Status','9')

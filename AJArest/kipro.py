@@ -35,7 +35,7 @@ __date__ = "Tue Mar 13 14:17:51 PDT 2012"
 __copyright__ = "Copyright (C) 2009 AJA Video Systems, Inc."
 __license__ = "Proprietary"
 
-from base import *
+from .base import *
 
 class Client(BaseClient):
     __author__ = "Support <support@aja.com>"
@@ -70,11 +70,11 @@ $ python
             raise UnsupportedFirmwareVersionError
         except UnresponsiveTargetError as e:
             print("UnresponsiveTargetError in kipro Client constructor")
-            print e
+            print(e)
             raise UnresponsiveTargetError
         except Exception as e:
             print("Error in Client constructor")
-            print e
+            print(e)
             raise UnresponsiveTargetError
             
 
@@ -192,7 +192,7 @@ $ python
         response = ""
         f = None
         try:
-            f = urllib2.urlopen(self.url + '/clips?action=get_playlists', timeout=5)
+            f = urllib.request.urlopen(self.url + '/clips?action=get_playlists', timeout=5)
             (code, response) = (f.getcode(), f.read())
             f.close()
         except:
@@ -232,61 +232,61 @@ $ python
 
 
 def usage():
-    print __doc__
+    print(__doc__)
 
 def demo(url):
     """ Demonstrates how to use the client and grabs some useful information. """
     client = Client(url)
 
-    print "Beginning demo. Pausing between actions for readability."
+    print("Beginning demo. Pausing between actions for readability.")
 
     from time import sleep
     sleep (2)
 
-    print "Current firmware version is: ", client.getFirmwareVersion()
+    print("Current firmware version is: ", client.getFirmwareVersion())
 
     sleep(2)
 
     (value, description) = client.getTransporterState()
-    print "The current transporter state is: ", description
+    print("The current transporter state is: ", description)
 
     sleep(2)
 
-    print
-    print "These are all the parameters which are visible to the API"
-    print
+    print()
+    print("These are all the parameters which are visible to the API")
+    print()
 
     sleep(2)
 
     readableParameters = client.getReadableParameters()
     for param in readableParameters:
-        for param_id, description in param.items():
-            print "%s: %s" % (param_id, description)
+        for param_id, description in list(param.items()):
+            print("%s: %s" % (param_id, description))
 
     sleep(2)
 
-    print
-    print "These are all of the parameters which can possibly be set."
-    print
+    print()
+    print("These are all of the parameters which can possibly be set.")
+    print()
 
     sleep(2)
 
     writeableParams = client.getWriteableParameters()
     for param in writeableParams:
-        for param_id, description in param.items():
-            print "%s: %s" % (param_id, description)
+        for param_id, description in list(param.items()):
+            print("%s: %s" % (param_id, description))
 
     sleep(2)
 
-    print
-    print "Valid settings for the eParamID_TransportCommand parameter:"
-    print
+    print()
+    print("Valid settings for the eParamID_TransportCommand parameter:")
+    print()
 
     sleep(2)
 
     settings = client.getValidSettingsForParameter('eParamID_TransportCommand')
     for (value, description) in settings:
-        print '  a value of %s means "%s"' % (value, description)
+        print('  a value of %s means "%s"' % (value, description))
 
 
     # Uncomment the following to see examples of record, playback etc. in action.
@@ -375,9 +375,9 @@ class TimecodeListener(threading.Thread):
                     if (event["param_id"] == "eParamID_DisplayTimecode"):
                         self.__setTimecode(event["str_value"])
                         break
-            print "Listener stopping."
+            print("Listener stopping.")
         else:
-            print "Failed to connect to", self.url
+            print("Failed to connect to", self.url)
 
     def stop(self):
         """ Tell the listener to stop listening and the thread to exit. """
