@@ -38,7 +38,7 @@ import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error,
 import json
 import re # "now you have two problems" -- jwz
 
-from base import *
+from .base import *
 
 class Client(BaseClient):
     __author__ = "Support <support@aja.com>"
