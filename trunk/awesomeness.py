@@ -25,6 +25,11 @@ class kumoManager (kumo.Client):
     def getSettings (self):
         for i in range(1,17):
             self.destSet[i] = int(c.getParameter('eParamID_XPT_Destination%i_Status' % (i))[1])
+            
+    def setChannel (self, destination, source):
+        self.destSet[int(destination)] = int(source)
+        # print ("setChannel", destination, source)
+        # print c.setParameter('eParamID_XPT_Destination3_Status','9')
 
 class MyFrame(wx.Frame):
     """
@@ -66,47 +71,37 @@ class MyFrame(wx.Frame):
         sizer = wx.FlexGridSizer(3, 5, 15)
         sizer.Add(wx.StaticText(panel, -1, "Destination"))
         sizer.Add(wx.StaticText(panel, -1, "Next Source"))
-        globalEnableSource = wx.CheckBox(panel, -1, label = "Current Source")
-        globalEnableSource.SetValue(True)
-        sizer.Add(globalEnableSource)
+        self.globalEnableSource = wx.CheckBox(panel, -1, label = "Current Source")
+        self.Bind(wx.EVT_CHECKBOX, self.OnGlobalCheck, self.globalEnableSource)
+        self.globalEnableSource.SetValue(False)
+        sizer.Add(self.globalEnableSource)
+        
+        self.destControls = {}
         
         for i in range (1,17):
+            tmp = {}
             destLbl = wx.StaticText (panel, -1, self.kumo.namesDst[i])
             sizer.Add(destLbl)
-            nextSource = wx.ComboBox (panel, -1, choices=self.kumo.namesSrc, value=self.kumo.namesSrc[self.kumo.destSet[i]])
+            nextSource = wx.ComboBox (panel, -1, style = wx.CB_READONLY,
+                        choices=self.kumo.namesSrc[1:], value=self.kumo.namesSrc[self.kumo.destSet[i]])
+            tmp["nextSource"] = nextSource
+            self.Bind(wx.EVT_TEXT, self.OnSelectSource, nextSource)
             sizer.Add(nextSource)
             enableSource = wx.CheckBox (panel, -1, label = self.kumo.namesSrc[self.kumo.destSet[i]])
-            enableSource.SetValue(True)
+            tmp["enableSource"] = enableSource
+            enableSource.SetValue(False)
             sizer.Add(enableSource)
-            #currentSource = wx.StaticText (panel, -1, self.kumo.namesSrc[self.kumo.destSet[i]])
-            #sizer.Add(currentSource)
-
+            self.destControls[i] = tmp
+            
         # Some control buttons
         sizer.AddStretchSpacer()
         applyButton = wx.Button(panel, -1, "Apply >>")
+        self.Bind(wx.EVT_BUTTON, self.OnApply, applyButton)
         sizer.Add(applyButton)
         updateButton = wx.Button(panel, -1, "<< Update")
+        self.Bind(wx.EVT_BUTTON, self.OnUpdate, updateButton)
         sizer.Add(updateButton)
         
-        
-        
-        ## and a few controls
-        #text = wx.StaticText(panel, -1, "Hello World!  Welcome to wxPython.")
-        #text.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
-        #text.SetSize(text.GetBestSize())
-        #btn = wx.Button(panel, -1, "Close")
-        #funbtn = wx.Button(panel, -1, "Just for fun...")
-        #
-        ## bind the button events to handlers
-        #self.Bind(wx.EVT_BUTTON, self.OnTimeToClose, btn)
-        #self.Bind(wx.EVT_BUTTON, self.OnFunButton, funbtn)
-        #
-        ## Use a sizer to layout the controls, stacked vertically and with
-        ## a 10 pixel border around each
-        #sizer = wx.BoxSizer(wx.VERTICAL)
-        #sizer.Add(text, 0, wx.ALL, 10)
-        #sizer.Add(btn, 0, wx.ALL, 10)
-        #sizer.Add(funbtn, 0, wx.ALL, 10)
         panel.SetSizer(sizer)
         panel.Layout()
 
@@ -118,7 +113,40 @@ class MyFrame(wx.Frame):
         self.Fit()
         self.CenterOnScreen(wx.BOTH)
         
+        # Start a timer to get latest setting from Kumo
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.timer.Start(2e+3) # 2 second interval
+    
+    def UpdateCurrent (self):
+        self.kumo.getSettings()
+        for dest in self.destControls:
+            self.destControls[dest]["enableSource"].SetLabel(self.kumo.namesSrc[self.kumo.destSet[dest]])
+        
+    def OnApply (self, evt):   
+        for dest in self.destControls:
+            if self.destControls[dest]["enableSource"].IsChecked():
+                self.kumo.setChannel(dest, self.destControls[dest]["nextSource"].GetSelection()+1)
+                
+        self.UpdateCurrent()
+        
+    def OnUpdate (self, evt):
+        self.UpdateCurrent()
+        for dest in self.destControls:
+            self.destControls[dest]["nextSource"].SetSelection(self.kumo.destSet[dest]-1)
             
+    def OnTimer (self, evt):
+        self.UpdateCurrent()
+        
+    def OnSelectSource (self, evt):
+        for dest in self.destControls:
+            if self.destControls[dest]["nextSource"] == evt.GetEventObject():
+                self.destControls[dest]["enableSource"].SetValue(True)
+        
+    def OnGlobalCheck (self, evt):            
+        for dest in self.destControls:
+            self.destControls[dest]["enableSource"].SetValue(self.globalEnableSource.GetValue())
+        
 
 class MyApp(wx.App):
     def OnInit(self):
@@ -129,15 +157,4 @@ class MyApp(wx.App):
         
 app = MyApp(redirect=False)
 app.MainLoop()
-
-
-            
-# print c.setParameter('eParamID_XPT_Destination3_Status','9')
-
-#c = kumoManager("http://10.70.58.25")
-#c.getNames()
-#c.getSettings()
-#
-#for i in range (1,17):
-#    print("%-15s = %s" % (c.namesDst[i], c.namesSrc[c.destSet[i]]))
 
