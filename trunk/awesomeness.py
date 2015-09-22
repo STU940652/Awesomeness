@@ -38,7 +38,6 @@ class SaveSettings (wx.Frame):
         panel = wx.Panel(self)
         self.settings = settings
         self.parent = parent
-        print (settings)
         
         mainSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer.Add(wx.StaticText(panel, -1, "Save the following settings to a Preset"), border = 5, flag = wx.ALL)
@@ -91,6 +90,9 @@ class SaveSettings (wx.Frame):
             pass
             
         presetName = self.PresetName.GetValue().strip().replace(":","")
+        
+        if "KumoPresets" not in presets:
+            presets["KumoPresets"] = {}
 
         if presetName in presets["KumoPresets"]:
             pass
