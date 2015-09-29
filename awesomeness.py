@@ -206,6 +206,7 @@ class MyFrame(wx.Frame):
         panelSizer.Add(sizer, flag = wx.EXPAND)
         panel.SetSizer(panelSizer)
         panel.Layout()
+        self.panel = panel
 
         # And also use a sizer to manage the size of the panel such
         # that it fills the frame
@@ -262,7 +263,7 @@ class MyFrame(wx.Frame):
 
     def OnApply (self, evt):   
         for dest in self.destControls:
-            print (self.destControls[dest]["enableSource"].IsChecked())
+            #print (self.destControls[dest]["enableSource"].IsChecked())
             if self.destControls[dest]["enableSource"].IsChecked():
                 self.kumo.setChannel(dest, self.destControls[dest]["nextSource"].GetSelection()+1)
                 
@@ -272,6 +273,9 @@ class MyFrame(wx.Frame):
 
         # Update        
         self.UpdateCurrent()
+        
+        # Redraw screen
+        self.panel.Layout()
         
     def OnUpdate (self, evt):
         self.UpdateCurrent()
@@ -286,6 +290,7 @@ class MyFrame(wx.Frame):
         self.UpdateCurrent()
         
     def OnSelectSource (self, evt):
+        print (evt)
         for dest in self.destControls:
             if self.destControls[dest]["nextSource"] == evt.GetEventObject():
                 if self.destControls[dest]["nextSource"].GetValue() == self.destControls[dest]["enableSource"].GetLabel():
