@@ -25,12 +25,13 @@ class kumoManager (kumo.Client):
     
     def getSettings (self):
         for i in range(1,17):
-            self.destSet[i] = int(c.getParameter('eParamID_XPT_Destination%i_Status' % (i))[1])
+            self.destSet[i] = int(self.getParameter('eParamID_XPT_Destination%i_Status' % (i))[1])
             
     def setChannel (self, destination, source):
         self.destSet[int(destination)] = int(source)
-        # print ("setChannel", destination, source)
-        # print c.setParameter('eParamID_XPT_Destination3_Status','9')
+        print ("setChannel", destination, source)
+        print (self.setParameter('eParamID_XPT_Destination%i_Status' %  int(destination) , str(source)))
+        #self.setParameter('eParamID_XPT_Destination9_Status','8'.encode('ascii'))
 
 class SaveSettings (wx.Frame):
     def __init__ (self, parent, settings, namesDst, namesSrc):
@@ -261,6 +262,7 @@ class MyFrame(wx.Frame):
 
     def OnApply (self, evt):   
         for dest in self.destControls:
+            print (self.destControls[dest]["enableSource"].IsChecked())
             if self.destControls[dest]["enableSource"].IsChecked():
                 self.kumo.setChannel(dest, self.destControls[dest]["nextSource"].GetSelection()+1)
                 
