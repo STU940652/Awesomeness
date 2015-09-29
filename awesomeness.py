@@ -254,7 +254,7 @@ class MyFrame(wx.Frame):
         for s in settings.split(','):
             destination, source = s.split('=')
             dest = int(destination)
-            source = int(source)
+            source = int(source)-1
             self.destControls[dest]["nextSource"].SetSelection(source)
             if self.destControls[dest]["nextSource"].GetValue() == self.destControls[dest]["enableSource"].GetLabel():
                 self.destControls[dest]["enableSource"].SetValue(False)
