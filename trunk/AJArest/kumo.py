@@ -81,7 +81,7 @@ $ python
         f = None
         params = urllib.parse.urlencode({'paramName':param, 'newValue' : value})
         try:
-            f = urllib.request.urlopen(self.url + '/config', params, timeout=5)
+            f = urllib.request.urlopen(self.url + '/config', params.encode('ascii'), timeout=5)
             result = (f.getcode(), f.read())
             f.close()
         except:
