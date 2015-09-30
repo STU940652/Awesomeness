@@ -188,7 +188,7 @@ class MyFrame(wx.Frame):
             nextSource = wx.ComboBox (panel, -1, style = wx.CB_READONLY,
                         choices=self.kumo.namesSrc[1:], value=self.kumo.namesSrc[self.kumo.destSet[i]])
             tmp["nextSource"] = nextSource
-            self.Bind(wx.EVT_TEXT, self.OnSelectSource, nextSource)
+            self.Bind(wx.EVT_COMBOBOX, self.OnSelectSource, nextSource)
             sizer.Add(nextSource)
             enableSource = wx.CheckBox (panel, -1, label = self.kumo.namesSrc[self.kumo.destSet[i]])
             tmp["enableSource"] = enableSource
@@ -292,7 +292,6 @@ class MyFrame(wx.Frame):
         self.UpdateCurrent()
         
     def OnSelectSource (self, evt):
-        print (evt)
         for dest in self.destControls:
             if self.destControls[dest]["nextSource"] == evt.GetEventObject():
                 if self.destControls[dest]["nextSource"].GetValue() == self.destControls[dest]["enableSource"].GetLabel():
