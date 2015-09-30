@@ -2,6 +2,8 @@ import wx
 import configparser
 from AJArest import kumo
 
+presetFileName = 'presets.ini'
+
 class kumoManager (kumo.Client):
     namesDst = ["%i" % x for x in range (18)]
     namesSrc = ["%i" % x for x in range (18)]
