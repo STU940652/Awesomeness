@@ -130,56 +130,32 @@ class SaveSettings (wx.Frame):
         # Done
         self.Close()
 
-class FrameKumo (wx.Frame):
-    """
-    This is MyFrame.  It just shows a few controls on a wxPanel,
-    and has a simple menu.
-    """
-    def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, -1, title)
+class FrameKumo (wx.Panel):
 
-        # Create the menubar
-        menuBar = wx.MenuBar()
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent, -1)
 
-        # and a menu 
-        menu = wx.Menu()
-
-        # add an item to the menu, using \tKeyName automatically
-        # creates an accelerator, the third param is some help text
-        # that will show up in the statusbar
-        menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Exit this simple sample")
-
-        # bind the menu event to an event handler
-        #self.Bind(wx.EVT_MENU, self.OnTimeToClose, id=wx.ID_EXIT)
-
-        # and put the menu on the menubar
-        menuBar.Append(menu, "&File")
-        self.SetMenuBar(menuBar)
-
-        self.CreateStatusBar()
-        
-        # Now create the Panel to put the other controls on.
-        panel = wx.Panel(self)
+        self.infoBar = wx.InfoBar(self)
         
         # Init the Kumo stuff
         self.kumo = kumoManager("http://10.70.58.25")
         self.kumo.getNames()
         self.kumo.getSettings()
         if self.kumo.online:
-            self.SetStatusText("Connected to Kumo")
+            self.infoBar.ShowMessage("Connected to Kumo")
         else:
-            self.SetStatusText("Offline")
+            self.infoBar.ShowMessage("Offline")
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        self.PresetSelection = wx.ComboBox(panel)
+        self.PresetSelection = wx.ComboBox(self)
         panelSizer.Add(self.PresetSelection, flag=wx.EXPAND)
         self.UpdatePresetList()
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        presetLoad = wx.Button(panel, -1, "Load Preset")
+        presetLoad = wx.Button(self, -1, "Load Preset")
         self.Bind(wx.EVT_BUTTON, self.OnLoad, presetLoad)
         sizer.Add(presetLoad)
-        presetSave = wx.Button(panel, -1, "Save Preset")
+        presetSave = wx.Button(self, -1, "Save Preset")
         self.Bind(wx.EVT_BUTTON, self.OnSave, presetSave)
         sizer.Add(presetSave)
         panelSizer.Add(sizer)
@@ -187,9 +163,9 @@ class FrameKumo (wx.Frame):
         
         sizer = wx.FlexGridSizer(3, 5, 15)
         
-        sizer.Add(wx.StaticText(panel, -1, "Destination"))
-        sizer.Add(wx.StaticText(panel, -1, "Next Source"))
-        self.globalEnableSource = wx.CheckBox(panel, -1, label = "Current Source")
+        sizer.Add(wx.StaticText(self, -1, "Destination"))
+        sizer.Add(wx.StaticText(self, -1, "Next Source"))
+        self.globalEnableSource = wx.CheckBox(self, -1, label = "Current Source")
         self.Bind(wx.EVT_CHECKBOX, self.OnGlobalCheck, self.globalEnableSource)
         self.globalEnableSource.SetValue(False)
         sizer.Add(self.globalEnableSource)
@@ -198,14 +174,14 @@ class FrameKumo (wx.Frame):
         
         for i in range (1,17):
             tmp = {}
-            destLbl = wx.StaticText (panel, -1, self.kumo.namesDst[i])
+            destLbl = wx.StaticText (self, -1, self.kumo.namesDst[i])
             sizer.Add(destLbl)
-            nextSource = wx.ComboBox (panel, -1, style = wx.CB_READONLY,
+            nextSource = wx.ComboBox (self, -1, style = wx.CB_READONLY,
                         choices=self.kumo.namesSrc[1:], value=self.kumo.namesSrc[self.kumo.destSet[i]])
             tmp["nextSource"] = nextSource
             self.Bind(wx.EVT_COMBOBOX, self.OnSelectSource, nextSource)
             sizer.Add(nextSource)
-            enableSource = wx.CheckBox (panel, -1, label = self.kumo.namesSrc[self.kumo.destSet[i]])
+            enableSource = wx.CheckBox (self, -1, label = self.kumo.namesSrc[self.kumo.destSet[i]])
             tmp["enableSource"] = enableSource
             enableSource.SetValue(False)
             sizer.Add(enableSource)
@@ -213,24 +189,17 @@ class FrameKumo (wx.Frame):
             
         # Some control buttons
         sizer.AddStretchSpacer()
-        applyButton = wx.Button(panel, -1, "Apply >>")
+        applyButton = wx.Button(self, -1, "Apply >>")
         self.Bind(wx.EVT_BUTTON, self.OnApply, applyButton)
         sizer.Add(applyButton)
-        updateButton = wx.Button(panel, -1, "<< Update")
+        updateButton = wx.Button(self, -1, "<< Update")
         self.Bind(wx.EVT_BUTTON, self.OnUpdate, updateButton)
         sizer.Add(updateButton)
         
         panelSizer.Add(sizer, flag = wx.EXPAND)
-        panel.SetSizer(panelSizer)
-        panel.Layout()
-        self.panel = panel
-
-        # And also use a sizer to manage the size of the panel such
-        # that it fills the frame
-        sizer = wx.BoxSizer()
-        sizer.Add(panel, 1, wx.EXPAND)
-        self.SetSizer(sizer)
-        self.Fit()
+        panelSizer.Add(self.infoBar, flag = wx.EXPAND)
+        self.SetSizer(panelSizer)
+        self.Layout()
         
         # Start a timer to get latest setting from Kumo
         self.timer = wx.Timer(self)
@@ -292,7 +261,7 @@ class FrameKumo (wx.Frame):
         self.UpdateCurrent()
         
         # Redraw screen
-        self.panel.Layout()
+        self.Layout()
         
     def OnUpdate (self, evt):
         self.UpdateCurrent()
