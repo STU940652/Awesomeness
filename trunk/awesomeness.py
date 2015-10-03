@@ -1,5 +1,6 @@
 import wx
 from frame_kumo import FrameKumo
+from frame_kipro import PanelKipro
 
 class MainFrame (wx.Frame):
     """
@@ -33,14 +34,14 @@ class MainFrame (wx.Frame):
         #splitter.SplitVertically(panelKumo, blank, 200)
 
         panelKumo = FrameKumo(self)
-        blank = wx.Panel(self)
+        panelKipro = PanelKipro(self)
         
         # And also use a sizer to manage the size of the panel such
         # that it fills the frame
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         #sizer.Add(splitter, 1, wx.EXPAND)
         sizer.Add(panelKumo, 1, wx.EXPAND)
-        sizer.Add(blank, 1, wx.EXPAND)
+        sizer.Add(panelKipro, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.Fit()
         
