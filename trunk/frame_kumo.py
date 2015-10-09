@@ -134,7 +134,7 @@ class SaveSettings (wx.Frame):
 class FrameKumo (wx.Panel):
 
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1)
+        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         self.infoBar = wx.InfoBar(self)
         
