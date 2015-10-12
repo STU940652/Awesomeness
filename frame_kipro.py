@@ -1,4 +1,5 @@
 import wx
+import time
 import configparser
 import threading
 from AJArest import kipro
@@ -29,15 +30,14 @@ class TimecodeUpdater(threading.Thread):
 
     def __init__(self, url, gui, callback):
         """
-        Create a TimecodeListener.
+        Create a TimecodeUpdater.
         Use start() to start it listening.
         """
-        super(TimecodeListener, self).__init__()
+        super(TimecodeUpdater, self).__init__()
         self.url = url
         self.__timecode = ""
         self.__stop = False
         self.__lock = threading.RLock()
-        self.__gui = gui
         self.__callback = callback
 
     def run(self):
@@ -49,7 +49,7 @@ class TimecodeUpdater(threading.Thread):
                 for event in events:
                     if (event["param_id"] == "eParamID_DisplayTimecode"):
                         # Update timecode in main loop
-                        wx.CallAfter(self.__callback, self.__gui, event["str_value"])
+                        wx.CallAfter(self.__callback, event["str_value"])
                         #self.__setTimecode(event["str_value"])
                         break
             print("Listener stopping.")
@@ -79,9 +79,11 @@ class PanelKipro (wx.Panel):
         else:
             self.infoBar.ShowMessage("Kipro Offline")
             
-        if self.kipro:
-            l = kipro.TimecodeUpdater("http://10.70.58.26", self, self.TimecodeCallback)
-            l.start()
+        self.timecodeUpdateThread = None
+        if self.kipro or True:
+            self.timecodeUpdateThread = TimecodeUpdater("http://10.70.58.26", self, self.TimecodeCallback)
+            self.timecodeUpdateThread.start()
+            self.Bind(wx.EVT_CLOSE, self.KillThreads, parent)
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         
@@ -166,6 +168,11 @@ class PanelKipro (wx.Panel):
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(2e+3) # 2 second interval
     
+    def KillThreads (self, evt):
+        print ("Done")
+        if self.timecodeUpdateThread:
+            self.timecodeUpdateThread.stop()
+            
     def OnSelectClipButton (self, evt):
         if self.kipro:
             self.kipro.goToClip(self.playListCombobox.GetValue())
