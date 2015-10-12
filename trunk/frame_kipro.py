@@ -38,20 +38,28 @@ class TimecodeUpdater(threading.Thread):
         self.__timecode = ""
         self.__stop = False
         self.__lock = threading.RLock()
+        self.__gui = gui
         self.__callback = callback
 
     def run(self):
-        c = Client(self.url)
+        c = kipro.Client(self.url)
         connection = c.connect()
         if connection:
             while not self.__stop:
-                events = c.waitForConfigEvents(connection)
-                for event in events:
-                    if (event["param_id"] == "eParamID_DisplayTimecode"):
-                        # Update timecode in main loop
-                        wx.CallAfter(self.__callback, event["str_value"])
-                        #self.__setTimecode(event["str_value"])
-                        break
+                try:
+                    # See if the GUI closed.  This will throw an exception if the GUI is closed.
+                    self.__gui.IsBeingDeleted()
+
+                    events = c.waitForConfigEvents(connection)
+                    for event in events:
+                        if (event["param_id"] == "eParamID_DisplayTimecode"):
+                            # Update timecode in main loop
+                            
+                            wx.CallAfter(self.__callback, event["str_value"])
+                            #self.__setTimecode(event["str_value"])
+                            break
+                except:
+                    break
             print("Listener stopping.")
         else:
             print("Failed to connect to", self.url)
@@ -80,10 +88,9 @@ class PanelKipro (wx.Panel):
             self.infoBar.ShowMessage("Kipro Offline")
             
         self.timecodeUpdateThread = None
-        if self.kipro or True:
+        if self.kipro:
             self.timecodeUpdateThread = TimecodeUpdater("http://10.70.58.26", self, self.TimecodeCallback)
             self.timecodeUpdateThread.start()
-            self.Bind(wx.EVT_CLOSE, self.KillThreads, parent)
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         
