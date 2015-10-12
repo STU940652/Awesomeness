@@ -32,19 +32,27 @@ class PanelHS50 (wx.Panel):
         
         
         # Program Output
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        buttons = ( ("1",  "Fast Reverse"),
-                    ("2",   "Play Reverse Command"),
-                    ("3",  "Single Step Reverse"),
-                    ("4",   "Stop Command"),
-                    ("5",  "Single Step Forward"))
-        for buttonLable, buttonCommand in buttons:
-            button = ButtonWithData(self, -1, buttonLable)
-            button.SetData(buttonCommand)
-            #self.Bind(wx.EVT_BUTTON, self.OnTransportButton, button)
-            sizer.Add(button)        
-        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        #sizer = wx.BoxSizer(wx.HORIZONTAL)
+        #buttons = ( ("1",  "Fast Reverse"),
+        #            ("2",   "Play Reverse Command"),
+        #            ("3",  "Single Step Reverse"),
+        #            ("4",   "Stop Command"),
+        #            ("5",  "Single Step Forward"))
+        #for buttonLable, buttonCommand in buttons:
+        #    button = ButtonWithData(self, -1, buttonLable)
+        #    button.SetData(buttonCommand)
+        #    #self.Bind(wx.EVT_BUTTON, self.OnTransportButton, button)
+        #    sizer.Add(button)        
+        #sizer.Add(wx.StaticText(self, -1, "PGM"))
+        AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ["1","2","3","4","5","FMEM1","FMEM2","PGM"])
+        panelSizer.Add(AUX_radio, border = 5, flag=wx.EXPAND|wx.ALL)
         
+        PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
+        panelSizer.Add(PGM_radio, border = 5, flag=wx.EXPAND|wx.ALL)
+
+        PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
+        panelSizer.Add(PVW_radio, border = 5, flag=wx.EXPAND|wx.ALL)
+
         
         #sizer = wx.FlexGridSizer(cols = 5)
         #sizer.Add(wx.StaticText(self, -1, "Start Time"))
