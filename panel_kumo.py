@@ -198,6 +198,7 @@ class PanelKumo (wx.Panel):
         sizer.Add(updateButton)
         
         panelSizer.Add(sizer, flag = wx.EXPAND)
+        panelSizer.AddStretchSpacer()
         panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
