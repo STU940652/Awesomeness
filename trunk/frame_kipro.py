@@ -28,7 +28,7 @@ class TimecodeUpdater(threading.Thread):
       >>> print l.getTimecode()
     """
 
-    def __init__(self, url, gui, callback):
+    def __init__(self, url, gui, timecode_callback, stopshow_callback = None):
         """
         Create a TimecodeUpdater.
         Use start() to start it listening.
@@ -39,7 +39,9 @@ class TimecodeUpdater(threading.Thread):
         self.__stop = False
         self.__lock = threading.RLock()
         self.__gui = gui
-        self.__callback = callback
+        self.__timecode_callback = timecode_callback
+        self.__stopshow_callback = stopshow_callback
+        self.__stopcode = None
 
     def run(self):
         c = kipro.Client(self.url)
@@ -55,9 +57,14 @@ class TimecodeUpdater(threading.Thread):
                         if (event["param_id"] == "eParamID_DisplayTimecode"):
                             # Update timecode in main loop
                             
-                            wx.CallAfter(self.__callback, event["str_value"])
-                            #self.__setTimecode(event["str_value"])
+                            wx.CallAfter(self.__timecode_callback, event["str_value"])
+                            timecode =  event["str_value"]
                             break
+                            
+                    if self.__stopcode and self.__stopshow_callback:
+                        if timecode > self.__getStopTime():
+                            wx.CallAfter(self.__stopshow_callback)
+                            
                 except:
                     break
             print("Listener stopping.")
@@ -68,6 +75,16 @@ class TimecodeUpdater(threading.Thread):
         """ Tell the listener to stop listening and the thread to exit. """
         with self.__lock:
             self.__stop = True
+            
+    def setStopTime(self, timecode):
+        """ Threadsafe. """
+        with self.__lock:
+            self.__stopcode = timecode
+
+    def __getStopTime(self):
+        """ Thread safe. """
+        with self.__lock:
+            return self.__stopcode
 
 class PanelKipro (wx.Panel):
 
@@ -89,7 +106,7 @@ class PanelKipro (wx.Panel):
             
         self.timecodeUpdateThread = None
         if self.kipro:
-            self.timecodeUpdateThread = TimecodeUpdater("http://10.70.58.26", self, self.TimecodeCallback)
+            self.timecodeUpdateThread = TimecodeUpdater("http://10.70.58.26", self, self.TimecodeCallback, self.OnEndClip)
             self.timecodeUpdateThread.start()
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
@@ -161,8 +178,15 @@ class PanelKipro (wx.Panel):
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
                 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.cueClipButton = wx.Button (self, -1, "Cue Clip")
+        self.Bind(wx.EVT_BUTTON, self.OnCueClip, self.cueClipButton)
+        sizer.Add(self.cueClipButton)
         self.showClipButton = wx.Button (self, -1, "Show Clip")
+        self.Bind(wx.EVT_BUTTON, self.OnShowClip, self.showClipButton)
         sizer.Add(self.showClipButton)
+        self.cancelClipButton = wx.Button (self, -1, "Cancel Clip")
+        self.Bind(wx.EVT_BUTTON, self.OnEndClip, self.cancelClipButton)
+        sizer.Add(self.cancelClipButton)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
         
         panelSizer.AddStretchSpacer()
@@ -175,10 +199,18 @@ class PanelKipro (wx.Panel):
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(2e+3) # 2 second interval
     
-    def KillThreads (self, evt):
-        print ("Done")
-        if self.timecodeUpdateThread:
-            self.timecodeUpdateThread.stop()
+    def OnCueClip (self, evt=None):
+        if self.kipro:
+            self.kipro.cueToTimecode(self.startTimeText.GetValue())
+            
+    def OnShowClip (self, evt):
+        self.OnCueClip()
+        if self.kipro:
+            self.kipro.play()
+            
+    def OnEndClip (self, evt=None):
+        if self.kipro:
+            self.kipro.stop()
             
     def OnSelectClipButton (self, evt):
         if self.kipro:
@@ -188,6 +220,9 @@ class PanelKipro (wx.Panel):
         command = evt.GetEventObject().GetData()
         if self.kipro:
             self.kipro.sendTransportCommandByDescription(command)
+            
+        if self.timecodeUpdateThread:
+            self.timecodeUpdateThread.setStopTime(None)
             
     def OnCueStart (self, evt=None):
         if self.kipro:
