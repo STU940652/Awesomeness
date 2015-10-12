@@ -1,6 +1,6 @@
 import wx
-from frame_kumo import FrameKumo
-from frame_kipro import PanelKipro
+from panel_kumo import PanelKumo
+from panel_kipro import PanelKipro
 
 class MainFrame (wx.Frame):
     """
@@ -29,11 +29,11 @@ class MainFrame (wx.Frame):
         self.SetMenuBar(menuBar)
         
         #splitter = wx.SplitterWindow(self, style=wx.SP_BORDER)
-        #panelKumo = FrameKumo(splitter)
+        #panelKumo = PanelKumo(splitter)
         #blank = wx.Panel(splitter)
         #splitter.SplitVertically(panelKumo, blank, 200)
 
-        panelKumo = FrameKumo(self)
+        panelKumo = PanelKumo(self)
         panelKipro = PanelKipro(self)
         
         # And also use a sizer to manage the size of the panel such

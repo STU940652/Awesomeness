@@ -131,7 +131,7 @@ class SaveSettings (wx.Frame):
         # Done
         self.Close()
 
-class FrameKumo (wx.Panel):
+class PanelKumo (wx.Panel):
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
