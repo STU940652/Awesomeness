@@ -145,7 +145,7 @@ class FrameKumo (wx.Panel):
         if self.kumo.online:
             self.infoBar.ShowMessage("Connected to Kumo")
         else:
-            self.infoBar.ShowMessage("Offline")
+            self.infoBar.ShowMessage("Kumo Offline")
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         self.PresetSelection = wx.ComboBox(self)
