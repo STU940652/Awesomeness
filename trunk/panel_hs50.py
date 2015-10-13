@@ -1,5 +1,12 @@
 import wx
 
+HOST = '10.70.58.14'    # The remote host
+PORT = 60040            # Standard prot for HS50
+
+STX = '\x02'
+ETX = '\x03'
+
+
 class ButtonWithData (wx.Button):
     Data = None
     
@@ -18,10 +25,13 @@ class PanelHS50 (wx.Panel):
 
         self.infoBar = wx.InfoBar(self)
         
-        # Init the kipro stuff
+        # Init the connection
         #try:
-        #    self.kipro = kipro.Client("http://10.70.58.26")
+        #    self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #    self.socket.connect((HOST, PORT))
+        #    self.online=True
         #except:
+        #    self.online=False
             
         if self.online:
             self.infoBar.ShowMessage("Connected to HS50")
@@ -29,52 +39,59 @@ class PanelHS50 (wx.Panel):
             self.infoBar.ShowMessage("HS50 Offline")
                     
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        
-        
+                
         # Program Output
-        #sizer = wx.BoxSizer(wx.HORIZONTAL)
-        #buttons = ( ("1",  "Fast Reverse"),
-        #            ("2",   "Play Reverse Command"),
-        #            ("3",  "Single Step Reverse"),
-        #            ("4",   "Stop Command"),
-        #            ("5",  "Single Step Forward"))
-        #for buttonLable, buttonCommand in buttons:
-        #    button = ButtonWithData(self, -1, buttonLable)
-        #    button.SetData(buttonCommand)
-        #    #self.Bind(wx.EVT_BUTTON, self.OnTransportButton, button)
-        #    sizer.Add(button)        
-        #sizer.Add(wx.StaticText(self, -1, "PGM"))
-        AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ["1","2","3","4","5","FMEM1","FMEM2","PGM"])
-        panelSizer.Add(AUX_radio, border = 5, flag=wx.EXPAND|wx.ALL)
+        self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ["1","2","3","4","5","FMEM1","FMEM2","PGM"])
+        self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.AUX_radio)
+        panelSizer.Add(self.AUX_radio, border = 5, flag=wx.EXPAND|wx.ALL)       
         
-        PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
-        panelSizer.Add(PGM_radio, border = 5, flag=wx.EXPAND|wx.ALL)
+        self.PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
+        self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PGM_radio)
+        panelSizer.Add(self.PGM_radio, border = 5, flag=wx.EXPAND|wx.ALL)
 
-        PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
-        panelSizer.Add(PVW_radio, border = 5, flag=wx.EXPAND|wx.ALL)
+        self.PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
+        self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PVW_radio)
+        panelSizer.Add(self.PVW_radio, border = 5, flag=wx.EXPAND|wx.ALL)
 
         
-        #sizer = wx.FlexGridSizer(cols = 5)
-        #sizer.Add(wx.StaticText(self, -1, "Start Time"))
-        #self.startTimeText = wx.TextCtrl (self, value = "00:00:00.000")
-        #sizer.Add(self.startTimeText, proportion = 1, flag=wx.EXPAND)
-        #self.startTimeFillButton = wx.Button (self, -1, "Fill")
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.AddStretchSpacer(1)
+        self.cutButton = wx.Button (self, -1, "Cut")
         #self.Bind(wx.EVT_BUTTON, self.OnFillStartTime, self.startTimeFillButton)
-        #sizer.Add(self.startTimeFillButton)
-        #self.startTimeCueButton = wx.Button (self, -1, "Cue")
-        #self.Bind(wx.EVT_BUTTON, self.OnCueStart, self.startTimeCueButton)
-        #sizer.Add(self.startTimeCueButton)
-        #self.startTimePlayFromButton = wx.Button (self, -1, "Play From")
-        #self.Bind(wx.EVT_BUTTON, self.OnPlayFrom, self.startTimePlayFromButton)
-        #sizer.Add(self.startTimePlayFromButton)
-        #panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        sizer.Add(self.cutButton)
+        sizer.AddStretchSpacer(1)
+        self.fadeButton = wx.Button (self, -1, "Auto Fade")
+        #self.Bind(wx.EVT_BUTTON, self.OnFillStartTime, self.startTimeFillButton)
+        sizer.Add(self.fadeButton)
+        sizer.AddStretchSpacer(1)
+        self.ftbButton = wx.Button (self, -1, "Fade to Black")
+        #self.Bind(wx.EVT_BUTTON, self.OnFillStartTime, self.startTimeFillButton)
+        sizer.Add(self.ftbButton)
+        sizer.AddStretchSpacer(1)
+        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND)
         
         panelSizer.AddStretchSpacer()
         panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
         
-        # Start a timer to get latest setting from kipro
+        # Start a timer to get latest setting from HS50
         #self.timer = wx.Timer(self)
         #self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         #self.timer.Start(2e+3) # 2 second interval
+
+    def OnChangeOutput (self, evt):
+        if evt.GetEventObject() == self.AUX_radio:
+            bus = "12"
+        elif evt.GetEventObject() == self.PGM_radio:
+            bus = "02"
+        elif evt.GetEventObject() == self.PVW_radio:
+            bus = "03"
+        else:
+            return
+            
+        inputList=["50", "51", "52", "53", "54", "73", "74", "77"]
+        
+        c = STX + "SBUS:" + bus + ":" + inputList[evt.GetEventObject().GetSelection()] + ETX
+        print (c)
+    
