@@ -174,6 +174,7 @@ class PanelKipro (wx.Panel):
         sizer.Add(self.stopTimeFillButton)
         sizer.AddStretchSpacer()
         self.stopTimePlayToButton = wx.Button (self, -1, "Play To")
+        self.Bind(wx.EVT_BUTTON, self.OnPlayTo, self.stopTimePlayToButton)        
         sizer.Add(self.stopTimePlayToButton)        
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
                 
