@@ -203,7 +203,7 @@ $ python
         events_stream = urllib.request.urlopen(self.url + "/json?action=wait_for_config_events&configid=0&connectionid=%s" % connectionid, timeout=5)
         if (events_stream.getcode() == self.__success) :
             events_json = events_stream.read()
-            events = json.loads( events_json )
+            events = json.loads( events_json.decode('utf-8') )
             return events
         return None
 
@@ -215,7 +215,7 @@ $ python
         connect_stream = urllib.request.urlopen(self.url + "/json?action=connect&configid=0", timeout=5)
         if (connect_stream.getcode() == self.__success) :
             connect_json = connect_stream.read()
-            result = json.loads( connect_json )
+            result = json.loads( connect_json.decode('utf-8') )
         return result['connectionid']
 
     def getFirmwareVersion(self):
