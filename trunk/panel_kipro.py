@@ -139,7 +139,7 @@ class PanelKipro (wx.Panel):
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         buttons = ( ("<<",  "Fast Reverse"),
-                    ("<",   "Play Reverse Command"),
+                    #("<",   "Play Reverse Command"),
                     ("|<",  "Single Step Reverse"),
                     ("X",   "Stop Command"),
                     (">|",  "Single Step Forward"),
@@ -205,10 +205,14 @@ class PanelKipro (wx.Panel):
             
     def OnShowClip (self, evt):
         self.OnCueClip()
+        if self.timecodeUpdateThread:
+            self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
         if self.kipro:
             self.kipro.play()
             
     def OnEndClip (self, evt=None):
+        if self.timecodeUpdateThread:
+            self.timecodeUpdateThread.setStopTime(None)
         if self.kipro:
             self.kipro.stop()
             
@@ -233,6 +237,12 @@ class PanelKipro (wx.Panel):
         if self.kipro:
             self.kipro.play()
             
+    def OnPlayTo (self, evt):
+        if self.timecodeUpdateThread:
+            self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
+        if self.kipro:
+            self.kipro.play()
+
     def OnTimer (self, evt):
         if self.kipro:
             # Get the playlists
@@ -242,7 +252,8 @@ class PanelKipro (wx.Panel):
                 if playlistDist["name"]=='All Clips':
                     playlist = playlistDist["cliplist"]
                     break
-            self.playListCombobox.SetItems(playlist)
+            if self.playListCombobox.GetItems() != playlist:
+                self.playListCombobox.SetItems(playlist)
             
             # Get the current clip name
             self.currentClipText.SetValue(self.kipro.getCurrentClipName())
