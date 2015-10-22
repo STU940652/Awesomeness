@@ -11,14 +11,13 @@ class kumoManager (kumo.Client):
     online = False
     
     def __init__ (self, url, cacheRawParameters=True):
-        #try:
-        #    kumo.Client.__init__(self,
-        #                        url=url,
-        #                        cacheRawParameters=cacheRawParameters)
-        #    self.online = True
-        #except:
-        #    self.online = False
-        pass
+        try:
+            kumo.Client.__init__(self,
+                                url=url,
+                                cacheRawParameters=cacheRawParameters)
+            self.online = True
+        except:
+            self.online = False
             
     def getNames (self):
         if self.online:

@@ -94,10 +94,10 @@ class PanelKipro (wx.Panel):
         self.infoBar = wx.InfoBar(self)
         
         # Init the kipro stuff
-        #try:
-        #    self.kipro = kipro.Client("http://10.70.58.26")
-        #except:
-        self.kipro = None
+        try:
+            self.kipro = kipro.Client("http://10.70.58.26")
+        except:
+            self.kipro = None
             
         if self.kipro:
             self.infoBar.ShowMessage("Connected to KiPro")

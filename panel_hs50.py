@@ -1,4 +1,6 @@
 import wx
+import socket
+import traceback
 
 HOST = '10.70.58.14'    # The remote host
 PORT = 60040            # Standard prot for HS50
@@ -26,12 +28,13 @@ class PanelHS50 (wx.Panel):
         self.infoBar = wx.InfoBar(self)
         
         # Init the connection
-        #try:
-        #    self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #    self.socket.connect((HOST, PORT))
-        #    self.online=True
-        #except:
-        #    self.online=False
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((HOST, PORT))
+            self.online=True
+        except:
+            traceback.print_exc()
+            self.online=False
             
         if self.online:
             self.infoBar.ShowMessage("Connected to HS50")
@@ -93,5 +96,6 @@ class PanelHS50 (wx.Panel):
         inputList=["50", "51", "52", "53", "54", "73", "74", "77"]
         
         c = STX + "SBUS:" + bus + ":" + inputList[evt.GetEventObject().GetSelection()] + ETX
+        #self.socket.sendall(c.encode('utf-8'))
         print (c)
     
