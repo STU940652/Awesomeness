@@ -5,8 +5,8 @@ import traceback
 HOST = '10.70.58.14'    # The remote host
 PORT = 60040            # Standard prot for HS50
 
-STX = '\x02'
-ETX = '\x03'
+STX = b'\x02'
+ETX = b'\x03'
 
 
 class ButtonWithData (wx.Button):
@@ -95,7 +95,7 @@ class PanelHS50 (wx.Panel):
             
         inputList=["50", "51", "52", "53", "54", "73", "74", "77"]
         
-        c = STX + "SBUS:" + bus + ":" + inputList[evt.GetEventObject().GetSelection()] + ETX
-        #self.socket.sendall(c.encode('utf-8'))
+        c = STX + b"SBUS:" + bus + b":" + inputList[evt.GetEventObject().GetSelection().encode('utf-8')] + ETX
+        #self.socket.sendall(c)
         print (c)
     
