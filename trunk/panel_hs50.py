@@ -85,17 +85,17 @@ class PanelHS50 (wx.Panel):
 
     def OnChangeOutput (self, evt):
         if evt.GetEventObject() == self.AUX_radio:
-            bus = "12"
+            bus = b"12"
         elif evt.GetEventObject() == self.PGM_radio:
-            bus = "02"
+            bus = b"02"
         elif evt.GetEventObject() == self.PVW_radio:
-            bus = "03"
+            bus = b"03"
         else:
             return
             
-        inputList=["50", "51", "52", "53", "54", "73", "74", "77"]
+        inputList=[b"50", b"51", b"52", b"53", b"54", b"73", b"74", b"77"]
         
-        c = STX + b"SBUS:" + bus + b":" + inputList[evt.GetEventObject().GetSelection().encode('utf-8')] + ETX
-        #self.socket.sendall(c)
-        print (c)
+        c = STX + b"SBUS:" + bus + b":" + inputList[evt.GetEventObject().GetSelection()] + ETX
+        self.socket.sendall(c)
+        #print (c)
     
