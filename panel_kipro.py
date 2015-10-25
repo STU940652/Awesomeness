@@ -2,6 +2,7 @@ import wx
 import time
 import configparser
 import threading
+import Settings
 from AJArest import kipro
 
 class ButtonWithData (wx.Button):
@@ -87,6 +88,7 @@ class TimecodeUpdater(threading.Thread):
             return self.__stopcode
 
 class PanelKipro (wx.Panel):
+    kipro = None
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -94,10 +96,12 @@ class PanelKipro (wx.Panel):
         self.infoBar = wx.InfoBar(self)
         
         # Init the kipro stuff
-        try:
-            self.kipro = kipro.Client("http://10.70.58.26")
-        except:
-            self.kipro = None
+        host = Settings.Config.get("KiPro","ip")
+        if len(host):
+            try:
+                self.kipro = kipro.Client("http://" + host)
+            except:
+                self.kipro = None
             
         if self.kipro:
             self.infoBar.ShowMessage("Connected to KiPro")

@@ -1,5 +1,6 @@
 import wx
 import configparser
+import Settings
 from AJArest import kumo
 
 presetFileName = 'presets.ini'
@@ -138,7 +139,8 @@ class PanelKumo (wx.Panel):
         self.infoBar = wx.InfoBar(self)
         
         # Init the Kumo stuff
-        self.kumo = kumoManager("http://10.70.58.25")
+        host = Settings.Config.get("KiPro","ip")
+        self.kumo = kumoManager("http://"+host)
         self.kumo.getNames()
         self.kumo.getSettings()
         if self.kumo.online:
