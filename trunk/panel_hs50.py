@@ -93,17 +93,17 @@ class PanelHS50 (wx.Panel):
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(0.2e+3) # 0.2 second interval
 
-    def OnCut (self, evt):
+    def OnCut (self, evt=None):
         c = STX + b"SCUT:00" + ETX
         if self.socket:
             self.socket.sendall(c)
         
-    def OnFade (self, evt):
+    def OnFade (self, evt=None):
         c = STX + b"SAUT:00:0" + ETX
         if self.socket:
             self.socket.sendall(c)
         
-    def OnFTB (self, evt):
+    def OnFTB (self, evt=None):
         c = STX + b"SAUT:06:0" + ETX
         if self.socket:
             self.socket.sendall(c)

@@ -89,11 +89,14 @@ class TimecodeUpdater(threading.Thread):
 
 class PanelKipro (wx.Panel):
     kipro = None
+    ShowingClip = False
+    SavedAuxChannel = 0
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         self.infoBar = wx.InfoBar(self)
+        self.parent = parent
         
         # Init the kipro stuff
         host = Settings.Config.get("KiPro","ip")
@@ -110,7 +113,7 @@ class PanelKipro (wx.Panel):
             
         self.timecodeUpdateThread = None
         if self.kipro:
-            self.timecodeUpdateThread = TimecodeUpdater("http://10.70.58.26", self, self.TimecodeCallback, self.OnEndClip)
+            self.timecodeUpdateThread = TimecodeUpdater("http://" + host, self, self.TimecodeCallback, self.OnEndClip)
             self.timecodeUpdateThread.start()
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
@@ -209,17 +212,66 @@ class PanelKipro (wx.Panel):
             self.kipro.cueToTimecode(self.startTimeText.GetValue())
             
     def OnShowClip (self, evt):
+        self.ShowingClip = True
+        # Prep clip
         self.OnCueClip()
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
+            
+        # Prep Video Switcher.  Set Preview to the correct channel
+        self.parent.panelHS50.PVW_radio.SetSelection(int(Settings.Config.get("HS50","KiProChannel")))
+        
+        # Video Switcher PGM Fade-to-Black
+        self.parent.panelHS50.OnFTB()
+        
+        # Wait for fade to complete
+        time.sleep(1)
+        
+        # Video Switcher: Get and store AUX channel
+        self.SavedAuxChannel = self.parent.panelHS50.AUX_radio.GetSelection()
+        
+        # Video Switcher: AUX to PGM
+        self.parent.panelHS50.AUX_radio.SetSelection(self.parent.panelHS50.AUX_radio.FindString('PGM'))
+                
+        # TODO: Audio Mixer: Fade Out
+            
+        # Start clip
         if self.kipro:
             self.kipro.play()
             
+        # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
+        self.parent.panelHS50.OnFade()
+        
+        # TODO: Audio Mixer: Fade In
+        
+        # TODO: Side Projectors: Un-shutter
+            
     def OnEndClip (self, evt=None):
+    
+        if self.ShowingClip:
+            # Video Switcher: Fade-to-black
+            self.parent.panelHS50.OnFTB()
+            
+            # TODO: Audio Mixer: Fade Out
+            
+            # Wait for fade to complete
+            time.sleep(1)
+            
+            # TODO: Side Projectors: Shutter
+
+            # Video Switcher: Restore AUX
+            self.parent.panelHS50.AUX_radio.SetSelection(self.SavedAuxChannel)
+            
+            # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
+            self.parent.panelHS50.OnFade()
+            
+        # Stop playback
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(None)
         if self.kipro:
             self.kipro.stop()
+            
+        ShowingClip = False
             
     def OnSelectClipButton (self, evt):
         if self.kipro:
