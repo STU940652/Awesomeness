@@ -49,8 +49,9 @@ class MainFrame (wx.Frame):
         sizer.Add(sizer2, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.Fit()
-        
-
+        self.panelKumo.SetupScrolling(self)
+        self.panelHS50.SetupScrolling(self)
+        self.panelKipro.SetupScrolling(self)
 
 class MyApp(wx.App):
     def OnInit(self):

@@ -1,4 +1,5 @@
 import wx
+import wx.lib.scrolledpanel 
 import socket
 import traceback
 import re
@@ -20,14 +21,14 @@ class ButtonWithData (wx.Button):
     def GetData (self):
         return self.Data
 
-class PanelHS50 (wx.Panel):
+class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
 
     online = False
     socket = None
     inputList=[b"50", b"51", b"52", b"53", b"54", b"73", b"74", b"77"]
 
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         self.infoBar = wx.InfoBar(self)
         
@@ -87,6 +88,7 @@ class PanelHS50 (wx.Panel):
         panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
+        #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)
         
         # Start a timer to get latest setting from HS50
         self.timer = wx.Timer(self)
