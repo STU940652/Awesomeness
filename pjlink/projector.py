@@ -5,7 +5,7 @@ from pjlink import protocol
 class ProjectorError(Exception):
     pass
 
-reverse_dict = lambda d: dict(zip(d.values(), d.keys()))
+reverse_dict = lambda d: dict(list(zip(list(d.values()), list(d.keys()))))
 
 POWER_STATES = {
     'off': '0',
