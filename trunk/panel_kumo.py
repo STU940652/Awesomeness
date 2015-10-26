@@ -140,7 +140,7 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
         self.infoBar = wx.InfoBar(self)
         
         # Init the Kumo stuff
-        host = Settings.Config.get("KiPro","ip")
+        host = Settings.Config.get("Kumo","ip")
         self.kumo = kumoManager("http://"+host)
         self.kumo.getNames()
         self.kumo.getSettings()
