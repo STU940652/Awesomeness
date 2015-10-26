@@ -34,18 +34,18 @@ class MainFrame (wx.Frame):
         #blank = wx.Panel(splitter)
         #splitter.SplitVertically(panelKumo, blank, 200)
 
-        panelKumo = PanelKumo(self)
-        panelHS50 = PanelHS50(self)
-        panelKipro = PanelKipro(self)
+        self.panelKumo = PanelKumo(self)
+        self.panelHS50 = PanelHS50(self)
+        self.panelKipro = PanelKipro(self)
         
         # And also use a sizer to manage the size of the panel such
         # that it fills the frame
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         #sizer.Add(splitter, 1, wx.EXPAND)
-        sizer.Add(panelKumo, 1, wx.EXPAND)
+        sizer.Add(self.panelKumo, 1, wx.EXPAND)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
-        sizer2.Add(panelHS50, 1, wx.EXPAND)
-        sizer2.Add(panelKipro, 1, wx.EXPAND)
+        sizer2.Add(self.panelHS50, 1, wx.EXPAND)
+        sizer2.Add(self.panelKipro, 1, wx.EXPAND)
         sizer.Add(sizer2, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.Fit()
