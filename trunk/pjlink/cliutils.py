@@ -12,7 +12,7 @@ def prompt(name, default=None):
     prompt = name + (default and ' [%s]' % default or '')
     prompt += name.endswith('?') and ' ' or ': '
     while True:
-        rv = raw_input(prompt)
+        rv = input(prompt)
         if rv:
             return rv
         if default is not None:
@@ -78,7 +78,7 @@ def prompt_choices(
     options = []
 
     for choice in choices:
-        if isinstance(choice, basestring):
+        if isinstance(choice, str):
             options.append(choice)
         else:
             options.append("%s [%s]" % (choice[1], choice[0]))
