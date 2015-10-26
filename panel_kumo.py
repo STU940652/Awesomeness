@@ -1,4 +1,5 @@
 import wx
+import wx.lib.scrolledpanel 
 import configparser
 import Settings
 from AJArest import kumo
@@ -131,10 +132,10 @@ class SaveSettings (wx.Frame):
         # Done
         self.Close()
 
-class PanelKumo (wx.Panel):
+class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
 
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         self.infoBar = wx.InfoBar(self)
         
@@ -203,6 +204,7 @@ class PanelKumo (wx.Panel):
         panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
+        #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)
         
         # Start a timer to get latest setting from Kumo
         self.timer = wx.Timer(self)

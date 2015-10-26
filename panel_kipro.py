@@ -1,4 +1,5 @@
 import wx
+import wx.lib.scrolledpanel 
 import time
 import configparser
 import threading
@@ -87,13 +88,13 @@ class TimecodeUpdater(threading.Thread):
         with self.__lock:
             return self.__stopcode
 
-class PanelKipro (wx.Panel):
+class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     kipro = None
     ShowingClip = False
     SavedAuxChannel = 0
 
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         self.infoBar = wx.InfoBar(self)
         self.parent = parent
@@ -201,6 +202,7 @@ class PanelKipro (wx.Panel):
         panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
+        #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)
         
         # Start a timer to get latest setting from kipro
         self.timer = wx.Timer(self)
