@@ -137,7 +137,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         if len(self.message):
             print (self.message)
             # Find the message of interest.  Discard anything before it.  Preserve everything after it
-            r = re.search(STX + "ABSC:([0-9]{2}):([0-9]{2}):([0-9]{1})" + ETX + "(.*)", self.message)
+            r = re.search(STX + b"ABSC:([0-9]{2}):([0-9]{2}):([0-9]{1})" + ETX + b"(.*)", self.message)
             if r:
                 bus, material, tally, self.message = r.groups()
                 
