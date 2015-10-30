@@ -65,6 +65,7 @@ class TimecodeUpdater(threading.Thread):
                             
                     if self.__stopcode and self.__stopshow_callback:
                         if timecode > self.__getStopTime():
+                            self.setStopTime(None) # Prevent multiple calls
                             wx.CallAfter(self.__stopshow_callback)
                             
                 except:
@@ -242,7 +243,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.kipro.play()
             
         # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-        self.parent.panelHS50.OnFade()
+        self.parent.panelHS50.OnCut()
+        self.parent.panelHS50.OnFTB()
         
         # TODO: Audio Mixer: Fade In
         
@@ -265,7 +267,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.parent.panelHS50.AUX_radio.SetSelection(self.SavedAuxChannel)
             
             # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-            self.parent.panelHS50.OnFade()
+            self.parent.panelHS50.OnCut()
+            self.parent.panelHS50.OnFTB()
             
         # Stop playback
         if self.timecodeUpdateThread:
