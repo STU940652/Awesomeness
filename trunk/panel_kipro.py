@@ -222,7 +222,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
             
         # Prep Video Switcher.  Set Preview to the correct channel
-        self.parent.panelHS50.PVW_radio.SetSelection(int(Settings.Config.get("HS50","KiProChannel")))
+        #self.parent.panelHS50.PVW_radio.SetSelection(int(Settings.Config.get("HS50","KiProChannel")))
+        self.parent.panelHS50.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
         
         # Video Switcher PGM Fade-to-Black
         self.parent.panelHS50.OnFTB()
@@ -231,10 +232,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         time.sleep(1)
         
         # Video Switcher: Get and store AUX channel
-        self.SavedAuxChannel = self.parent.panelHS50.AUX_radio.GetSelection()
+        self.SavedAuxChannel = self.parent.panelHS50.AUX_radio.GetSelection() # Returns number
+        self.SavedAuxChannel = self.parent.panelHS50.AUX_radio.GetItemLabel(self.SavedAuxChannel) # Returns label
         
         # Video Switcher: AUX to PGM
-        self.parent.panelHS50.AUX_radio.SetSelection(self.parent.panelHS50.AUX_radio.FindString('PGM'))
+        #self.parent.panelHS50.AUX_radio.SetSelection(self.parent.panelHS50.AUX_radio.FindString('PGM'))
+        self.parent.panelHS50.ChangeOutput('AUX', 'PGM')
                 
         # TODO: Audio Mixer: Fade Out
             
@@ -264,7 +267,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # TODO: Side Projectors: Shutter
 
             # Video Switcher: Restore AUX
-            self.parent.panelHS50.AUX_radio.SetSelection(self.SavedAuxChannel)
+            #self.parent.panelHS50.AUX_radio.SetSelection(self.SavedAuxChannel)
+            self.parent.panelHS50.ChangeOutput('AUX', self.SavedAuxChannel)
             
             # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
             self.parent.panelHS50.OnCut()

@@ -3,6 +3,7 @@ import wx.lib.scrolledpanel
 import socket
 import traceback
 import re
+import time
 import collections
 import Settings
 
@@ -99,16 +100,19 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         c = STX + b"SCUT:00" + ETX
         if self.socket:
             self.socket.sendall(c)
+        time.sleep(0.05)
         
     def OnFade (self, evt=None):
         c = STX + b"SAUT:00:0" + ETX
         if self.socket:
             self.socket.sendall(c)
+        time.sleep(0.05)
         
     def OnFTB (self, evt=None):
         c = STX + b"SAUT:06:0" + ETX
         if self.socket:
             self.socket.sendall(c)
+        time.sleep(0.05)
         
     def OnChangeOutput (self, evt):
         if evt.GetEventObject() == self.AUX_radio:
@@ -123,7 +127,27 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         c = STX + b"SBUS:" + bus + b":" + self.inputList[evt.GetEventObject().GetSelection()] + ETX
         if self.socket:
             self.socket.sendall(c)
-        #print (c)
+        # print (c)
+        time.sleep(0.05)
+        
+    def ChangeOutput (self, channel, selection):
+        if channel == "AUX":
+            control = self.AUX_radio
+            bus = b"12"
+        elif channel == "PGM":
+            control = self.PGM_radio
+            bus = b"02"
+        elif channel == "PVW":
+            control = self.PVW_radio
+            bus = b"03"
+        else:
+            return
+                    
+        c = STX + b"SBUS:" + bus + b":" + self.inputList[control.FindString(selection)] + ETX
+        if self.socket:
+            self.socket.sendall(c)
+        # print (c)
+        time.sleep(0.05)
         
     def OnTimer (self, evt):
         self.message = b''
