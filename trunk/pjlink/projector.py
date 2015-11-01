@@ -51,7 +51,8 @@ class Projector(object):
         # I'm just implementing the authentication scheme designed in the
         # protocol. Don't take this as any kind of assurance that it's secure.
 
-        data = self.s.recv(18) # data = self.f.read(9)
+        data = self.s.recv(18).decode('utf-8') # data = self.f.read(9)
+        print (data)
         assert data[:7] == 'PJLINK '
         security = data[7]
         if security == '0':
@@ -66,16 +67,16 @@ class Projector(object):
         # so we just get the power state.
 
         password = get_password()
-        pass_data = hashlib.md5(salt + password).hexdigest()
+        pass_data = hashlib.md5(salt.encode('utf-8') + password.encode('utf-8')).hexdigest()
         cmd_data = protocol.to_binary('POWR', '?')
-        self.s.send (pass_data + cmd_data) # self.f.write(pass_data + cmd_data)
+        self.s.send (pass_data.encode('utf-8') + cmd_data.encode('utf-8')) # self.f.write(pass_data + cmd_data)
         #self.f.flush()
 
         # read the response, see if it's a failed auth
-        data = self.s.recv(7) # data = self.f.read(7)
+        data = self.s.recv(7).decode('utf-8') # data = self.f.read(7)
         if data[:7] == 'PJLINK ':
             # should be a failed auth if we get that
-            data += self.s.recv(5) #data += self.f.read(5)
+            data += self.s.recv(5).decode('utf-8') #data += self.f.read(5)
             assert data == 'PJLINK ERRA\r'
             # it definitely is
             return False
@@ -99,6 +100,7 @@ class Projector(object):
 
     def set(self, body, param):
         success, response = protocol.send_command(self.s, body, param)
+        print (success, response)
         if not success:
             raise ProjectorError(response)
         assert response == 'OK'
