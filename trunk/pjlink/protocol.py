@@ -1,9 +1,9 @@
-def read_until(f, term):
+def read_until(s, term):
     data = []
-    c = f.read(1)
+    c = s.recv(1) # c = f.read(1)
     while c != term:
         data.append(c)
-        c = f.read(1)
+        c = s.recv(1) # c = f.read(1)
     return ''.join(data)
 
 def to_binary(body, param, sep=' '):
@@ -14,9 +14,9 @@ def to_binary(body, param, sep=' '):
 
     return '%1' + body + sep + param + '\r'
 
-def parse_response(f, data=''):
+def parse_response(s, data=''):
     if len(data) < 7:
-        data += f.read(2 + 4 + 1 - len(data))
+        data += s.recv(2 + 4 + 1 - len(data)) # data += f.read(2 + 4 + 1 - len(data))
 
     header = data[0]
     assert header == '%'
@@ -34,7 +34,7 @@ def parse_response(f, data=''):
     sep = data[6]
     assert sep == '='
 
-    param = read_until(f, '\r')
+    param = read_until(s, '\r')
 
     return (body, param)
 
@@ -45,12 +45,12 @@ ERRORS = {
     'ERR4': 'projector failure',
 }
 
-def send_command(f, req_body, req_param):
+def send_command(s, req_body, req_param):
     data = to_binary(req_body, req_param)
-    f.write(data)
-    f.flush()
+    self.s.send (data) # f.write(data)
+    #f.flush()
 
-    resp_body, resp_param = parse_response(f)
+    resp_body, resp_param = parse_response(s)
     assert resp_body == req_body
 
     if resp_param in ERRORS:
