@@ -14,29 +14,30 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
         self.infoBar = wx.InfoBar(self)
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        sizer = wx.wx.FlexGridSizer(cols = 3)
+        sizer = wx.FlexGridSizer(cols = 3)
         
         # Init the connection
-        for i in range(5):
-            host = Settings.Config.get("projector","ip%i" % i, None)
+        for i in range(1, 5):
+            host = Settings.Config.get("projector","ip%i" % i, fallback=None)
             get_password = lambda: 'panasonic' # default password
             
             if host == None:
                 break
             try:
-                proj = Projector(host)
+                proj = pjlink.Projector(host)
                 rv = proj.authenticate(get_password)
                 if rv is False:
                     print('Incorrect password.', file=sys.stderr)
                     
             except:
+                proj = None
                 traceback.print_exc()
                 
             # Built the UI
-            name = Settings.Config.get("projector", "name%i" % i, str(i))
+            name = Settings.Config.get("projector", "name%i" % i, fallback=str(i))
             sizer.Add(wx.StaticText(self, -1, name))
             
-            onoffText = wx.StaticText(self, -1, "Offline")
+            onoffText = wx.TextCtrl (self, -1, "offline", style=wx.TE_READONLY)
             sizer.Add(onoffText)
             
             shutterCheck = wx.CheckBox(self, -1, label = "Shuttered")
@@ -46,7 +47,7 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
             self.projectors.append( (proj, onoffText, shutterCheck) )
 
         
-        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND)
+        panelSizer.Add(sizer, border = 5, proportion=1, flag=wx.EXPAND|wx.CENTER)
         
         panelSizer.AddStretchSpacer()
         panelSizer.Add(self.infoBar, flag = wx.EXPAND)
@@ -59,7 +60,14 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
         self.timer.Start(0.2e+3) # 0.2 second interval
 
     def OnShutter (self, evt):
-        pass
+        for proj, onoffText, shutterCheck in self.projectors:
+            if proj and (shutterCheck == evt.GetEventObject()):
+                proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutterCheck.GetValue())
         
     def OnTimer (self, evt):
-        pass
+        for proj, onoffText, shutterCheck in self.projectors:
+            if proj:
+                onoffText.SetValue(proj.get_power())
+                a, v = proj.get_mute()
+                shutterCheck.SetValue(a)
+            
