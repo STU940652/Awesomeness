@@ -119,6 +119,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.timecodeUpdateThread.start()
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
+        panelSizer.Add(wx.StaticText(self, -1, "KiPro"))
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.playListCombobox = wx.ComboBox(self, style = wx.CB_READONLY|wx.CB_DROPDOWN,)

@@ -4,17 +4,16 @@ import pjlink
 import traceback
 import Settings
 
-class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
+class PanelProjector (wx.Panel):
 
     projectors = []
 
     def __init__(self, parent):
-        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
+        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
-        self.infoBar = wx.InfoBar(self)
-        
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        sizer = wx.FlexGridSizer(cols = 3)
+        panelSizer.Add(wx.StaticText(self, -1, "Projectors"))
+        sizer = wx.FlexGridSizer(cols = 3, vgap = 5, hgap = 5)
         
         # Init the connection
         for i in range(1, 5):
@@ -47,10 +46,8 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
             self.projectors.append( (proj, onoffText, shutterCheck) )
 
         
-        panelSizer.Add(sizer, border = 5, proportion=1, flag=wx.EXPAND|wx.CENTER)
+        panelSizer.Add(sizer, border = 5, proportion=0, flag=wx.ALIGN_CENTER_HORIZONTAL|wx.ALL)
         
-        panelSizer.AddStretchSpacer()
-        panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
         

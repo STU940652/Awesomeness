@@ -47,7 +47,7 @@ class MainFrame (wx.Frame):
         sizer.Add(self.panelKumo, 1, wx.EXPAND)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
         sizer2.Add(self.panelHS50, 1, wx.EXPAND)
-        sizer2.Add(self.panelProjectors, 1, wx.EXPAND)
+        sizer2.Add(self.panelProjectors, 0, wx.EXPAND)
         sizer2.Add(self.panelKipro, 1, wx.EXPAND)
         sizer.Add(sizer2, 1, wx.EXPAND)
         self.SetSizer(sizer)
@@ -55,7 +55,7 @@ class MainFrame (wx.Frame):
         self.panelKumo.SetupScrolling(self)
         self.panelHS50.SetupScrolling(self)
         self.panelKipro.SetupScrolling(self)
-        self.panelProjectors.SetupScrolling(self)
+        #self.panelProjectors.SetupScrolling(self)
 
 class MyApp(wx.App):
     def OnInit(self):

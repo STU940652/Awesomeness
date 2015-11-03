@@ -150,6 +150,8 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
             self.infoBar.ShowMessage("Kumo Offline")
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
+        panelSizer.Add(wx.StaticText(self, -1, "Kumo"))
+        
         self.PresetSelection = wx.ComboBox(self)
         panelSizer.Add(self.PresetSelection, flag=wx.EXPAND)
         self.UpdatePresetList()
