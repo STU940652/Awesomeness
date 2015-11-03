@@ -52,7 +52,7 @@ class Projector(object):
         # protocol. Don't take this as any kind of assurance that it's secure.
 
         data = self.s.recv(18).decode('utf-8') # data = self.f.read(9)
-        print (data)
+        #print (data)
         assert data[:7] == 'PJLINK '
         security = data[7]
         if security == '0':
@@ -100,7 +100,7 @@ class Projector(object):
 
     def set(self, body, param):
         success, response = protocol.send_command(self.s, body, param)
-        print (success, response)
+        #print (success, response)
         if not success:
             raise ProjectorError(response)
         assert response == 'OK'

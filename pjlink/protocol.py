@@ -18,7 +18,7 @@ def parse_response(s, data=''):
     if len(data) < 7:
         data += s.recv(2 + 4 + 1 - len(data)).decode('utf-8') # data += f.read(2 + 4 + 1 - len(data))
 
-    print (data)
+    #print (data)
     header = data[0]
     assert header == '%'
 
@@ -48,12 +48,12 @@ ERRORS = {
 
 def send_command(s, req_body, req_param):
     data = to_binary(req_body, req_param)
-    print (data)
+    #print (data)
     s.send (data.encode('utf-8')) # f.write(data)
     #f.flush()
 
     resp_body, resp_param = parse_response(s)
-    print (resp_body, resp_param)
+    #print (resp_body, resp_param)
     assert resp_body == req_body
 
     if resp_param in ERRORS:
