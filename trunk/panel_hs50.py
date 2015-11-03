@@ -26,7 +26,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
 
     online = False
     socket = None
-    inputList=[b"50", b"51", b"52", b"53", b"54", b"73", b"74", b"77"]
+    inputList=[b"72", b"50", b"51", b"52", b"53", b"54", b"73", b"74", b"77"]
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -54,17 +54,18 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
             self.infoBar.ShowMessage("HS50 Offline")
                     
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-                
+        panelSizer.Add(wx.StaticText(self, -1, "Video Switcher"))
+        
         # Program Output
-        self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ["1","2","3","4","5","FMEM1","FMEM2","PGM"])
+        self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ["Black","1","2","3","4","5","FMEM1","FMEM2","PGM"])
         self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.AUX_radio)
         panelSizer.Add(self.AUX_radio, border = 5, flag=wx.EXPAND|wx.ALL)       
         
-        self.PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
+        self.PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ["Black","1","2","3","4","5","FMEM1","FMEM2"])
         self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PGM_radio)
         panelSizer.Add(self.PGM_radio, border = 5, flag=wx.EXPAND|wx.ALL)
 
-        self.PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ["1","2","3","4","5","FMEM1","FMEM2"])
+        self.PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ["Black","1","2","3","4","5","FMEM1","FMEM2"])
         self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PVW_radio)
         panelSizer.Add(self.PVW_radio, border = 5, flag=wx.EXPAND|wx.ALL)
 
