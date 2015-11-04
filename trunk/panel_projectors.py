@@ -30,7 +30,7 @@ class PanelProjector (wx.Panel):
                     
             except:
                 proj = None
-                traceback.print_exc()
+                #traceback.print_exc()
                 
             # Built the UI
             name = Settings.Config.get("projector", "name%i" % i, fallback=str(i))
@@ -54,8 +54,13 @@ class PanelProjector (wx.Panel):
         # Start a timer to get latest setting from HS50
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(0.2e+3) # 0.2 second interval
+        self.timer.Start(1e+3) # 1 second interval
 
+    def SetShutter (self, shutter):
+        for proj, onoffText, shutterCheck in self.projectors:
+            if proj:
+                proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter)
+                
     def OnShutter (self, evt):
         for proj, onoffText, shutterCheck in self.projectors:
             if proj and (shutterCheck == evt.GetEventObject()):
