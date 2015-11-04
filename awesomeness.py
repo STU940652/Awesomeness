@@ -30,11 +30,6 @@ class MainFrame (wx.Frame):
         menuBar.Append(menu, "&File")
         self.SetMenuBar(menuBar)
         
-        #splitter = wx.SplitterWindow(self, style=wx.SP_BORDER)
-        #panelKumo = PanelKumo(splitter)
-        #blank = wx.Panel(splitter)
-        #splitter.SplitVertically(panelKumo, blank, 200)
-
         self.panelKumo = PanelKumo(self)
         self.panelHS50 = PanelHS50(self)
         self.panelKipro = PanelKipro(self)
@@ -43,7 +38,6 @@ class MainFrame (wx.Frame):
         # And also use a sizer to manage the size of the panel such
         # that it fills the frame
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        #sizer.Add(splitter, 1, wx.EXPAND)
         sizer.Add(self.panelKumo, 1, wx.EXPAND)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
         sizer2.Add(self.panelHS50, 1, wx.EXPAND)
@@ -55,7 +49,6 @@ class MainFrame (wx.Frame):
         self.panelKumo.SetupScrolling(self)
         self.panelHS50.SetupScrolling(self)
         self.panelKipro.SetupScrolling(self)
-        #self.panelProjectors.SetupScrolling(self)
 
 class MyApp(wx.App):
     def OnInit(self):
