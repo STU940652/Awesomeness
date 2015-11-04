@@ -66,13 +66,10 @@ $ python
                                 versionParam = "eParamID_SWVersion",
                                 cacheRawParameters=cacheRawParameters)
         except UnsupportedFirmwareVersionError:
-            print("UnsupportedFirmwareVersionError")
             raise UnsupportedFirmwareVersionError
         except UnresponsiveTargetError:
-            print("UnresponsiveTargetError in kipro Client constructor")
             raise UnresponsiveTargetError
         except:
-            print("Error in Client constructor")
             raise UnresponsiveTargetError
 
     def setParameter(self, param, value):
@@ -103,7 +100,7 @@ $ python
         except:
             if f is not None:
                 f.close()
-            print(('getRawParameter failed;  http code = ' + str(result)))
+            #print(('getRawParameter failed;  http code = ' + str(result)))
             raise
 
         return result
