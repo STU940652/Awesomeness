@@ -66,15 +66,10 @@ $ python
                                 versionParam = "eParamID_SWVersion",
                                 cacheRawParameters=cacheRawParameters)
         except UnsupportedFirmwareVersionError:
-            print("UnsupportedFirmwareVersionError")
             raise UnsupportedFirmwareVersionError
         except UnresponsiveTargetError as e:
-            print("UnresponsiveTargetError in kipro Client constructor")
-            print(e)
             raise UnresponsiveTargetError
         except Exception as e:
-            print("Error in Client constructor")
-            print(e)
             raise UnresponsiveTargetError
             
 

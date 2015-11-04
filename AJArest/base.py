@@ -53,12 +53,8 @@ $ python
         try:
             self.firmwareVersion = self.__getFirmwareVersion(versionParam)
         except IOError as e:
-            print("IOError trying to communicate with target in BaseClient constructor")
-            print(e)
             raise UnresponsiveTargetError
         except Exception as e:
-            print("Error trying to communicate with target in BaseClient constructor")
-            print(e)
             raise UnresponsiveTargetError
         
         if self.firmwareVersion < self.encodeVersion(supportedFirmwareVersion):
