@@ -21,6 +21,10 @@ class MainFrame (wx.Frame):
         # add an item to the menu, using \tKeyName automatically
         # creates an accelerator, the third param is some help text
         # that will show up in the statusbar
+        menuKumoId = wx.NewId()
+        self.menuKumo = menu.AppendCheckItem(menuKumoId, "Kumo", "Enable Kumo Panel")
+        self.menuKumo.Check(True)
+        self.Bind(wx.EVT_MENU, self.OnKumoMenuCheck, self.menuKumo)
         menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Exit this simple sample")
 
         # bind the menu event to an event handler
@@ -31,6 +35,7 @@ class MainFrame (wx.Frame):
         self.SetMenuBar(menuBar)
         
         self.panelKumo = PanelKumo(self)
+        self.panelKumoBlank = None
         self.panelHS50 = PanelHS50(self)
         self.panelKipro = PanelKipro(self)
         self.panelProjectors = PanelProjector(self)
@@ -49,6 +54,23 @@ class MainFrame (wx.Frame):
         self.panelKumo.SetupScrolling(self)
         self.panelHS50.SetupScrolling(self)
         self.panelKipro.SetupScrolling(self)
+    
+    def OnKumoMenuCheck (self, evt):
+        if self.menuKumo.IsChecked():
+            self.panelKumo = PanelKumo(self)
+            self.Sizer.Replace(self.panelKumoBlank, self.panelKumo, True)
+            self.panelKumoBlank.Destroy()
+            self.Sizer.Show(self.panelKumo, True)
+            self.panelKumo.SetupScrolling(self)
+            
+        else:
+            self.panelKumoBlank = wx.Panel(self)
+            self.Sizer.Replace(self.panelKumo, self.panelKumoBlank, True)
+            self.panelKumo.Destroy()
+            self.panelKumo = wx.Panel() # We really need this, but I don't know why
+            self.Sizer.Hide(self.panelKumoBlank, True)
+        
+        self.Layout()
 
 class MyApp(wx.App):
     def OnInit(self):
