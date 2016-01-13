@@ -47,6 +47,13 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
             except:
                 traceback.print_exc()
                 self.online=False
+                
+        # Get Channel List
+        ChannelNames = ["Black","1","2","3","4","5","FMEM1","FMEM2","PGM"]
+        for i in range(len(ChannelNames)):
+            n = Settings.Config.get("HS50","ChannelName%i" % i, fallback = "")
+            if len(n):
+                ChannelNames[i] = n
             
         if self.online:
             self.infoBar.ShowMessage("Connected to HS50")
@@ -57,15 +64,15 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         panelSizer.Add(wx.StaticText(self, -1, "Video Switcher"))
         
         # Program Output
-        self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ["Black","1","2","3","4","5","FMEM1","FMEM2","PGM"])
+        self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ChannelNames)
         self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.AUX_radio)
         panelSizer.Add(self.AUX_radio, border = 5, flag=wx.EXPAND|wx.ALL)       
         
-        self.PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ["Black","1","2","3","4","5","FMEM1","FMEM2"])
+        self.PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ChannelNames[:8])
         self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PGM_radio)
         panelSizer.Add(self.PGM_radio, border = 5, flag=wx.EXPAND|wx.ALL)
 
-        self.PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ["Black","1","2","3","4","5","FMEM1","FMEM2"])
+        self.PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ChannelNames[:8])
         self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PVW_radio)
         panelSizer.Add(self.PVW_radio, border = 5, flag=wx.EXPAND|wx.ALL)
 
