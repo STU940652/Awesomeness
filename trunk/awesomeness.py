@@ -4,6 +4,46 @@ from panel_kipro import PanelKipro
 from panel_hs50 import PanelHS50
 from panel_projectors import PanelProjector
 
+class PanelManager():    
+    def __init__ (self, parent, thisClass, menuCheck, parentSizer, proportion = 1):
+        self.thisClass = thisClass
+        self.menuCheck = menuCheck
+        self.parentSizer = parentSizer
+        self.parent = parent
+        self.proportion = proportion
+        self.panelMain =  wx.Panel(self.parent)
+        self.panelBlank =  wx.Panel(self.parent)
+
+        # Create panel and add it to the sizer
+        if self.menuCheck.IsChecked():
+            self.panelMain = self.thisClass(self.parent)
+            self.parentSizer.Add(self.panelMain, proportion, wx.EXPAND)
+            self.parentSizer.Show(self.panelMain, True)                
+            
+        else:
+            self.parentSizer.Add(self.panelBlank, proportion, wx.EXPAND)
+            self.parentSizer.Hide(self.panelBlank, True)    
+        
+    def OnMenuCheck (self, evt = None):
+        if self.menuCheck.IsChecked():
+            self.panelMain = self.thisClass(self.parent)
+            self.parentSizer.Replace(self.panelBlank, self.panelMain, True)
+            self.parentSizer.Show(self.panelMain, True)
+            if self.proportion:
+                self.panelMain.SetupScrolling(self.parent)
+            
+        else:
+            self.parentSizer.Replace(self.panelMain, self.panelBlank, True)
+            self.panelMain.Destroy()
+            self.panelMain = wx.Panel() # We really need this, but I don't know why
+            self.parentSizer.Hide(self.panelBlank, True)
+        
+        self.parentSizer.Layout()
+        
+    def SetupScrolling(self, dummy = None):
+        self.panelMain.SetupScrolling(self.parent)
+        
+
 class MainFrame (wx.Frame):
     """
     This is MyFrame.  It just shows a few controls on a wxPanel,
@@ -21,10 +61,6 @@ class MainFrame (wx.Frame):
         # add an item to the menu, using \tKeyName automatically
         # creates an accelerator, the third param is some help text
         # that will show up in the statusbar
-        menuKumoId = wx.NewId()
-        self.menuKumo = menu.AppendCheckItem(menuKumoId, "Kumo", "Enable Kumo Panel")
-        self.menuKumo.Check(True)
-        self.Bind(wx.EVT_MENU, self.OnKumoMenuCheck, self.menuKumo)
         menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Exit this simple sample")
 
         # bind the menu event to an event handler
@@ -32,46 +68,54 @@ class MainFrame (wx.Frame):
 
         # and put the menu on the menubar
         menuBar.Append(menu, "&File")
-        self.SetMenuBar(menuBar)
         
-        self.panelKumo = PanelKumo(self)
-        self.panelKumoBlank = None
-        self.panelHS50 = PanelHS50(self)
-        self.panelKipro = PanelKipro(self)
-        self.panelProjectors = PanelProjector(self)
+        menu = wx.Menu()
+        self.menuKumo = menu.AppendCheckItem(wx.ID_ANY, "Kumo", "Enable Kumo Panel")
+        self.menuKumo.Check(True)
+        self.Bind(wx.EVT_MENU, self.OnKumoMenuCheck, self.menuKumo)
+        self.menuHS50 = menu.AppendCheckItem(wx.ID_ANY, "HS50", "Enable HS50 Panel")
+        self.menuHS50.Check(True)
+        self.Bind(wx.EVT_MENU, self.OnHS50MenuCheck, self.menuHS50)
+        self.menuProj = menu.AppendCheckItem(wx.ID_ANY, "Projectors", "Enable Projector Panel")
+        self.menuProj.Check(True)
+        self.Bind(wx.EVT_MENU, self.OnProjMenuCheck, self.menuProj)
+        self.menuKiPro = menu.AppendCheckItem(wx.ID_ANY, "KiPro", "Enable KiPro Panel")
+        self.menuKiPro.Check(True)
+        self.Bind(wx.EVT_MENU, self.OnKiProMenuCheck, self.menuKiPro)
+        
+        menuBar.Append(menu, "&View")
+        
+        self.SetMenuBar(menuBar)
         
         # And also use a sizer to manage the size of the panel such
         # that it fills the frame
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.panelKumo, 1, wx.EXPAND)
+        self.panelKumo = PanelManager (self, PanelKumo, self.menuKumo, sizer) #sizer.Add(self.panelKumo, 1, wx.EXPAND)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
-        sizer2.Add(self.panelHS50, 1, wx.EXPAND)
-        sizer2.Add(self.panelProjectors, 0, wx.EXPAND)
-        sizer2.Add(self.panelKipro, 1, wx.EXPAND)
+        self.panelHS50 = PanelManager (self, PanelHS50, self.menuHS50, sizer2) #sizer2.Add(self.panelHS50, 1, wx.EXPAND)
+        self.panelProjectors = PanelManager (self, PanelProjector, self.menuProj, sizer2, 0) #sizer2.Add(self.panelProjectors, 0, wx.EXPAND)
+        self.panelKiPro = PanelManager (self, PanelKipro, self.menuKiPro, sizer2) #sizer2.Add(self.panelKipro, 1, wx.EXPAND)
         sizer.Add(sizer2, 1, wx.EXPAND)
         self.SetSizer(sizer)
         self.Fit()
+        
         self.panelKumo.SetupScrolling(self)
         self.panelHS50.SetupScrolling(self)
-        self.panelKipro.SetupScrolling(self)
+        self.panelKiPro.SetupScrolling(self)
     
     def OnKumoMenuCheck (self, evt):
-        if self.menuKumo.IsChecked():
-            self.panelKumo = PanelKumo(self)
-            self.Sizer.Replace(self.panelKumoBlank, self.panelKumo, True)
-            self.panelKumoBlank.Destroy()
-            self.Sizer.Show(self.panelKumo, True)
-            self.panelKumo.SetupScrolling(self)
-            
-        else:
-            self.panelKumoBlank = wx.Panel(self)
-            self.Sizer.Replace(self.panelKumo, self.panelKumoBlank, True)
-            self.panelKumo.Destroy()
-            self.panelKumo = wx.Panel() # We really need this, but I don't know why
-            self.Sizer.Hide(self.panelKumoBlank, True)
+        self.panelKumo.OnMenuCheck()
         
-        self.Layout()
+    def OnHS50MenuCheck (self, evt):
+        self.panelHS50.OnMenuCheck()
 
+    def OnProjMenuCheck (self, evt):
+        self.panelProjectors.OnMenuCheck()
+
+    def OnKiProMenuCheck (self, evt):
+        self.panelKiPro.OnMenuCheck()
+
+        
 class MyApp(wx.App):
     def OnInit(self):
         frame = MainFrame(None, "Awesomeness")
