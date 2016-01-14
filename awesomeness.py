@@ -3,6 +3,7 @@ from panel_kumo import PanelKumo
 from panel_kipro import PanelKipro
 from panel_hs50 import PanelHS50
 from panel_projectors import PanelProjector
+import Settings
 
 class PanelManager():    
     def __init__ (self, parent, thisClass, menuCheck, parentSizer, proportion = 1):
@@ -18,30 +19,34 @@ class PanelManager():
         if self.menuCheck.IsChecked():
             self.panelMain = self.thisClass(self.parent)
             self.parentSizer.Add(self.panelMain, proportion, wx.EXPAND)
-            self.parentSizer.Show(self.panelMain, True)                
+            self.parentSizer.Show(self.panelMain, True) 
+            self.MainDisplayed = True
             
         else:
             self.parentSizer.Add(self.panelBlank, proportion, wx.EXPAND)
-            self.parentSizer.Hide(self.panelBlank, True)    
+            self.parentSizer.Hide(self.panelBlank, True)
+            self.MainDisplayed = False
         
     def OnMenuCheck (self, evt = None):
         if self.menuCheck.IsChecked():
             self.panelMain = self.thisClass(self.parent)
             self.parentSizer.Replace(self.panelBlank, self.panelMain, True)
             self.parentSizer.Show(self.panelMain, True)
-            if self.proportion:
-                self.panelMain.SetupScrolling(self.parent)
+            self.MainDisplayed = True
+            self.SetupScrolling(self.parent)
             
         else:
             self.parentSizer.Replace(self.panelMain, self.panelBlank, True)
             self.panelMain.Destroy()
             self.panelMain = wx.Panel() # We really need this, but I don't know why
             self.parentSizer.Hide(self.panelBlank, True)
+            self.MainDisplayed = False
         
         self.parentSizer.Layout()
         
     def SetupScrolling(self, dummy = None):
-        self.panelMain.SetupScrolling(self.parent)
+        if self.proportion and self.MainDisplayed:
+            self.panelMain.SetupScrolling(self.parent)
         
 
 class MainFrame (wx.Frame):
@@ -71,17 +76,19 @@ class MainFrame (wx.Frame):
         
         menu = wx.Menu()
         self.menuKumo = menu.AppendCheckItem(wx.ID_ANY, "Kumo", "Enable Kumo Panel")
-        self.menuKumo.Check(True)
+        self.menuKumo.Check(Settings.Config.getboolean("Kumo", "show", fallback=True))
         self.Bind(wx.EVT_MENU, self.OnKumoMenuCheck, self.menuKumo)
         self.menuHS50 = menu.AppendCheckItem(wx.ID_ANY, "HS50", "Enable HS50 Panel")
-        self.menuHS50.Check(True)
+        self.menuHS50.Check(Settings.Config.getboolean("HS50", "show", fallback=True))
         self.Bind(wx.EVT_MENU, self.OnHS50MenuCheck, self.menuHS50)
         self.menuProj = menu.AppendCheckItem(wx.ID_ANY, "Projectors", "Enable Projector Panel")
-        self.menuProj.Check(True)
+        self.menuProj.Check(Settings.Config.getboolean("projector", "show", fallback=True))
         self.Bind(wx.EVT_MENU, self.OnProjMenuCheck, self.menuProj)
         self.menuKiPro = menu.AppendCheckItem(wx.ID_ANY, "KiPro", "Enable KiPro Panel")
-        self.menuKiPro.Check(True)
+        self.menuKiPro.Check(Settings.Config.getboolean("KiPro", "show", fallback=True))
         self.Bind(wx.EVT_MENU, self.OnKiProMenuCheck, self.menuKiPro)
+        menu.AppendSeparator()
+        self.Bind(wx.EVT_MENU, self.OnViewSave, menu.Append(wx.ID_ANY, "Save Settings", "Save the view settings"))
         
         menuBar.Append(menu, "&View")
         
@@ -114,6 +121,9 @@ class MainFrame (wx.Frame):
 
     def OnKiProMenuCheck (self, evt):
         self.panelKiPro.OnMenuCheck()
+        
+    def OnViewSave (self, evt):
+        pass
 
         
 class MyApp(wx.App):
