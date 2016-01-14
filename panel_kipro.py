@@ -222,21 +222,22 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
             
-        # Prep Video Switcher.  Set Preview to the correct channel
-        self.parent.panelHS50.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
+        if self.parent.panelHS50.MainDisplayed:
+            # Prep Video Switcher.  Set Preview to the correct channel
+            self.parent.panelHS50.panelMain.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
         
-        # Video Switcher PGM Fade-to-Black
-        self.parent.panelHS50.OnFTB()
-        
-        # Wait for fade to complete
-        time.sleep(1)
-        
-        # Video Switcher: Get and store AUX channel
-        self.SavedAuxChannel = self.parent.panelHS50.AUX_radio.GetSelection() # Returns number
-        self.SavedAuxChannel = self.parent.panelHS50.AUX_radio.GetItemLabel(self.SavedAuxChannel) # Returns label
-        
-        # Video Switcher: AUX to PGM
-        self.parent.panelHS50.ChangeOutput('AUX', 'PGM')
+            # Video Switcher PGM Fade-to-Black
+            self.parent.panelHS50.panelMain.OnFTB()
+            
+            # Wait for fade to complete
+            time.sleep(1)
+            
+            # Video Switcher: Get and store AUX channel
+            self.SavedAuxChannel = self.parent.panelHS50.panelMain.AUX_radio.GetSelection() # Returns number
+            self.SavedAuxChannel = self.parent.panelHS50.panelMain.AUX_radio.GetItemLabel(self.SavedAuxChannel) # Returns label
+            
+            # Video Switcher: AUX to PGM
+            self.parent.panelHS50.panelMain.ChangeOutput('AUX', 'PGM')
                 
         # TODO: Audio Mixer: Fade Out
             
@@ -244,20 +245,23 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.kipro:
             self.kipro.play()
             
-        # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-        self.parent.panelHS50.OnCut()
-        self.parent.panelHS50.OnFTB()
+        if self.parent.panelHS50.MainDisplayed:
+            # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
+            self.parent.panelHS50.panelMain.OnCut()
+            self.parent.panelHS50.panelMain.OnFTB()
         
         # TODO: Audio Mixer: Fade In
         
-        # Side Projectors: Un-shutter
-        self.parent.panelProjectors.SetShutter(False)
+        if self.parent.panelProjectors.MainDisplayed:
+            # Side Projectors: Un-shutter
+            self.parent.panelProjectors.panelMain.SetShutter(False)
             
     def OnEndClip (self, evt=None):
     
         if self.ShowingClip:
-            # Video Switcher: Fade-to-black
-            self.parent.panelHS50.OnFTB()
+            if self.parent.panelHS50.MainDisplayed:
+                # Video Switcher: Fade-to-black
+                self.parent.panelHS50.panelMain.OnFTB()
             
             # TODO: Audio Mixer: Fade Out
             
@@ -271,15 +275,17 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.kipro.stop()
             
         if self.ShowingClip:
-            # Side Projectors: Shutter
-            self.parent.panelProjectors.SetShutter(True)
+            if self.parent.panelProjectors.MainDisplayed:
+                # Side Projectors: Shutter
+                self.parent.panelProjectors.panelMain.SetShutter(True)
 
-            # Video Switcher: Restore AUX
-            self.parent.panelHS50.ChangeOutput('AUX', self.SavedAuxChannel)
-            
-            # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-            self.parent.panelHS50.OnCut()
-            self.parent.panelHS50.OnFTB()
+            if self.parent.panelHS50.MainDisplayed:
+                # Video Switcher: Restore AUX
+                self.parent.panelHS50.panelMain.ChangeOutput('AUX', self.SavedAuxChannel)
+                
+                # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
+                self.parent.panelHS50.panelMain.OnCut()
+                self.parent.panelHS50.panelMain.OnFTB()
             
         ShowingClip = False
             
