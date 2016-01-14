@@ -123,7 +123,11 @@ class MainFrame (wx.Frame):
         self.panelKiPro.OnMenuCheck()
         
     def OnViewSave (self, evt):
-        pass
+        Settings.Config.set("Kumo", "show", str(self.menuKumo.IsChecked()))
+        Settings.Config.set("HS50", "show", str(self.menuHS50.IsChecked()))
+        Settings.Config.set("projector", "show", str(self.menuProj.IsChecked()))
+        Settings.Config.set("KiPro", "show", str(self.menuKiPro.IsChecked()))
+        Settings.write()
 
         
 class MyApp(wx.App):

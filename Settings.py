@@ -34,3 +34,8 @@ try:
 except:
     pass
     
+def write():
+    global Config
+    with open ('settings.ini', 'wt') as f:
+        Config.write(f)
+    
