@@ -3,7 +3,7 @@ import os
 
 Config=configparser.SafeConfigParser()
 
-# Put in some default values
+# Put in some default values 
 Config.add_section('Kumo')
 Config.set('Kumo', 'ip', '')
 
