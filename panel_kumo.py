@@ -212,6 +212,8 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(2e+3) # 2 second interval
+
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
         
     def UpdatePresetList (self):
         # Get preset settings if they exist
@@ -293,4 +295,11 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
     def OnGlobalCheck (self, evt):            
         for dest in self.destControls:
             self.destControls[dest]["enableSource"].SetValue(self.globalEnableSource.GetValue())
+        
+    def OnDestroy (self, evt):
+        # Cleanup Timer
+        self.timer.Stop()
+        
+        # Let the event pass
+        evt.Skip()
         

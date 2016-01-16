@@ -210,6 +210,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(2e+3) # 2 second interval
+        
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
     
     def OnCueClip (self, evt=None):
         if self.kipro:
@@ -342,3 +344,16 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         
     def TimecodeCallback (self, timecode):
         self.currentTimeText.SetValue(timecode)
+
+    def OnDestroy (self, evt):
+        # Cleanup Timer
+        self.timer.Stop()
+        
+        # Cleanup Thread
+        if self.timecodeUpdateThread:
+            self.timecodeUpdateThread.stop()
+            self.timecodeUpdateThread.join()
+        
+        # Let the event pass
+        evt.Skip()
+        

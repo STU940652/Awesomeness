@@ -56,6 +56,8 @@ class PanelProjector (wx.Panel):
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(1e+3) # 1 second interval
 
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
+        
     def SetShutter (self, shutter):
         for proj, onoffText, shutterCheck in self.projectors:
             if proj:
@@ -72,4 +74,12 @@ class PanelProjector (wx.Panel):
                 onoffText.SetValue(proj.get_power())
                 a, v = proj.get_mute()
                 shutterCheck.SetValue(a)
-            
+
+    def OnDestroy (self, evt):
+        # Cleanup Timer
+        self.timer.Stop()
+        
+        # Let the event pass
+        evt.Skip()
+        
+                
