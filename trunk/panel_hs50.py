@@ -46,6 +46,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
                 self.online=True
             except:
                 traceback.print_exc()
+                self.socket = None
                 self.online=False
                 
         # Get Channel List
@@ -103,6 +104,8 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(0.2e+3) # 0.2 second interval
+        
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
 
     def OnCut (self, evt=None):
         c = STX + b"SCUT:00" + ETX
@@ -156,6 +159,13 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
             self.socket.sendall(c)
         # print (c)
         time.sleep(0.05)
+        
+    def OnDestroy (self, evt):
+        # Cleanup Timer
+        self.timer.Stop()
+        
+        # Let the event pass
+        evt.Skip()
         
     def OnTimer (self, evt):
         self.message = b''
