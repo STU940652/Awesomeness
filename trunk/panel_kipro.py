@@ -6,6 +6,35 @@ import threading
 import Settings
 from AJArest import kipro
 
+# Time conversion helper
+def frames_to_timecode (frames, fps):
+    frames = float(frames)
+    h = int(frames/(60*60*fps))
+    msl = frames - h*60*60*fps
+    m = int(msl/(60*fps))
+    msl = msl - m*60*fps
+    s = int(msl/fps)
+    f = round(msl-s*fps)
+    return "%02i:%02i:%02i:%02i" % (h,m,s,f)
+    
+def timecode_to_frames (s, fps):
+    d = s.split(':')
+    mult = fps
+    frames = float(d.pop(-1))
+    while len (d):
+        frames = frames + float(d.pop(-1))*mult
+        mult = mult * 60.0
+    return round(frames)
+    
+#def frames_to_frames (frames, fps):
+#    return timecode_to_frames(frames_to_timecode(frames, fps),fps)
+#    
+#def test (max, fps):
+#    for f in range(max):
+#        if f != frames_to_frames(f, fps):
+#            print (f)
+#            break
+
 class ButtonWithData (wx.Button):
     Data = None
     
@@ -93,6 +122,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     kipro = None
     ShowingClip = False
     SavedAuxChannel = 0
+    currentClipInfo = None
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -137,15 +167,30 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(wx.StaticText(self, -1, "Current Time"))
-        self.currentTimeText = wx.TextCtrl (self, style = wx.TE_READONLY, value = "00:12:00.000")
+        self.currentTimeText = wx.TextCtrl (self, style = wx.TE_READONLY, value = frames_to_timecode(0,30))
         sizer.Add(self.currentTimeText, flag=wx.EXPAND)
-        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        #panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
         
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        #sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(wx.StaticText(self, -1, "Current State"))
         self.currentStateText = wx.TextCtrl (self, style = wx.TE_READONLY)
         sizer.Add(self.currentStateText, flag=wx.EXPAND)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        
+        # Time Slider
+        self.timeslider = wx.Slider(self, -1, 0, 0, 1000)
+        self.timeslider.SetRange(0, 1000)
+        panelSizer.Add(self.timeslider, border = 5, flag=wx.EXPAND|wx.ALL)
+        self.Bind(wx.EVT_SLIDER, self.OnSetTime, self.timeslider)
+        
+        # Duration Labels
+        self.timeElapsed = wx.TextCtrl(self, style = wx.TE_READONLY)
+        self.timeRemaining = wx.TextCtrl(self, style = wx.TE_READONLY)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.timeElapsed)
+        sizer.AddStretchSpacer()
+        sizer.Add(self.timeRemaining)
+        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.BOTTOM)
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         buttons = ( ("<<",  "Fast Reverse"),
@@ -320,19 +365,24 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
 
     def OnTimer (self, evt):
         if self.kipro:
-            # Get the playlists
-            playlist = []
-            playlistDictList = self.kipro.getPlaylists()
-            for playlistDist in playlistDictList:
-                if playlistDist["name"]=='All Clips':
-                    playlist = playlistDist["cliplist"]
-                    break
-            if self.playListCombobox.GetItems() != playlist:
-                self.playListCombobox.SetItems(playlist)
+            # Get the clip list
+            clipListDict = self.kipro.getClipList()
+            clipList = clipListDict.keys()
+
+            if self.playListCombobox.GetItems() != clipList:
+                self.playListCombobox.SetItems(clipList)
             
             # Get the current clip name
-            self.currentClipText.SetValue(self.kipro.getCurrentClipName())
+            currentClipName = self.kipro.getCurrentClipName().rsplit('.', 1)[0]
+            self.currentClipText.SetValue(currentClipName)
             
+            # Store clip data
+            self.currentClipInfo = None
+            try:
+                self.currentClipInfo = clipListDict[currentClipName]
+            except:
+                pass
+                
             # Get the current transport state
             self.currentStateText.SetValue(self.kipro.getTransporterState()[1])
             
@@ -344,6 +394,24 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         
     def TimecodeCallback (self, timecode):
         self.currentTimeText.SetValue(timecode)
+        
+        # Update the Time Slider
+        # Position = MaxValue * (currentFrames - startFrames) / duration
+        if self.currentClipInfo:
+            fps = float(self.currentClipInfo["framerate"])
+            percent = (timecode_to_frames(timecode, fps) - timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)) / int(self.currentClipInfo["framecount"])
+        self.timeslider.SetValue(percent * self.timeslider.GetMax())   
+
+    def OnSetTime(self, evt):
+        slidePercent = self.timeslider.GetValue() / self.timeslider.GetMax()
+        # CueTimecode = StartTimecode + (position/MaxValue) * durationTimecode
+        if self.currentClipInfo:
+            fps = float(self.currentClipInfo["framerate"])
+            slidePercent = self.timeslider.GetValue() / self.timeslider.GetMax()
+            slideFrame = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps) + \
+                        slideRatio * int(self.currentClipInfo["framecount"])
+            if self.kipro:
+                self.kipro.cueToTimecode(frames_to_timecode(slideFrame, fps))
 
     def OnDestroy (self, evt):
         # Cleanup Timer

@@ -36,6 +36,7 @@ __copyright__ = "Copyright (C) 2009 AJA Video Systems, Inc."
 __license__ = "Proprietary"
 
 from .base import *
+import collections
 
 class Client(BaseClient):
     __author__ = "Support <support@aja.com>"
@@ -201,6 +202,32 @@ $ python
             entries = top["playlists"]
             for entry in entries:
                 playlists.append(entry['playlist'])
+
+        return playlists
+
+    def getClipList(self):
+        """
+        Get the current list clips.
+        """
+        code = 0
+        response = ""
+        f = None
+        try:
+            f = urllib.request.urlopen(self.url + '/clips?action=get_clips', timeout=5)
+            (code, response) = (f.getcode(), f.read())
+            f.close()
+        except:
+            if f is not None:
+                f.close()
+            raise
+
+        playlists = collections.OrderedDict() 
+        if code == self.__success:
+            top = self.asPython(response)
+            entries = top["clips"]
+            for entry in entries:
+                name = entry["clipname"].rsplit('.',1)[0]
+                playlists[name] = entry
 
         return playlists
 
