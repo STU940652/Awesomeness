@@ -367,7 +367,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.kipro:
             # Get the clip list
             clipListDict = self.kipro.getClipList()
-            clipList = clipListDict.keys()
+            clipList = list(clipListDict.keys())
 
             if self.playListCombobox.GetItems() != clipList:
                 self.playListCombobox.SetItems(clipList)
@@ -400,14 +400,13 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.currentClipInfo:
             fps = float(self.currentClipInfo["framerate"])
             percent = (timecode_to_frames(timecode, fps) - timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)) / int(self.currentClipInfo["framecount"])
-        self.timeslider.SetValue(percent * self.timeslider.GetMax())   
+            self.timeslider.SetValue(percent * self.timeslider.GetMax())   
 
     def OnSetTime(self, evt):
-        slidePercent = self.timeslider.GetValue() / self.timeslider.GetMax()
         # CueTimecode = StartTimecode + (position/MaxValue) * durationTimecode
         if self.currentClipInfo:
             fps = float(self.currentClipInfo["framerate"])
-            slidePercent = self.timeslider.GetValue() / self.timeslider.GetMax()
+            slideRatio = self.timeslider.GetValue() / self.timeslider.GetMax()
             slideFrame = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps) + \
                         slideRatio * int(self.currentClipInfo["framecount"])
             if self.kipro:
