@@ -7,7 +7,7 @@ import Settings
 from AJArest import kipro
 
 # Time conversion helper
-def frames_to_timecode (frames, fps):
+def frames_to_timecode (frames, fps, hms_only = False):
     frames = float(frames)
     h = int(frames/(60*60*fps))
     msl = frames - h*60*60*fps
@@ -15,6 +15,8 @@ def frames_to_timecode (frames, fps):
     msl = msl - m*60*fps
     s = int(msl/fps)
     f = round(msl-s*fps)
+    if hms_only:
+        return "%02i:%02i:%02i" % (h,m,s)
     return "%02i:%02i:%02i:%02i" % (h,m,s,f)
     
 def timecode_to_frames (s, fps):
@@ -123,6 +125,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     ShowingClip = False
     SavedAuxChannel = 0
     currentClipInfo = None
+    sliderMask = 0
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -184,8 +187,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.Bind(wx.EVT_SLIDER, self.OnSetTime, self.timeslider)
         
         # Duration Labels
-        self.timeElapsed = wx.TextCtrl(self, style = wx.TE_READONLY)
-        self.timeRemaining = wx.TextCtrl(self, style = wx.TE_READONLY)
+        self.timeElapsed = wx.StaticText(self)
+        self.timeRemaining = wx.StaticText(self)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(self.timeElapsed)
         sizer.AddStretchSpacer()
@@ -264,6 +267,9 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
     def OnShowClip (self, evt):
         self.ShowingClip = True
+        self.timeslider.Disable()
+        self.startTimeText.Disable()
+        self.stopTimeText.Disable()
         # Prep clip
         self.OnCueClip()
         if self.timecodeUpdateThread:
@@ -334,7 +340,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 self.parent.panelHS50.panelMain.OnCut()
                 self.parent.panelHS50.panelMain.OnFTB()
             
-        ShowingClip = False
+        self.ShowingClip = False
+        self.timeslider.Enable()
+        self.startTimeText.Enable()
+        self.stopTimeText.Enable()
             
     def OnSelectClipButton (self, evt):
         if self.kipro:
@@ -393,15 +402,37 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.stopTimeText.SetValue(self.currentTimeText.GetValue())
         
     def TimecodeCallback (self, timecode):
-        self.currentTimeText.SetValue(timecode)
+        self.currentTimeText.SetValue(timecode)        
+        fps = float(self.currentClipInfo["framerate"])
+        timecode_frames = timecode_to_frames(timecode, fps)
+        if self.ShowingClip:
+            # Times are from the selected part of the clip
+            starting_frames = timecode_to_frames(self.startTimeText.GetValue(), fps)
+            duration_frames = timecode_to_frames(self.stopTimeText.GetValue(), fps) - timecode_to_frames(self.startTimeText.GetValue(), fps)
+        else:
+            # Times are from the full clip
+            starting_frames = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)
+            duration_frames = int(self.currentClipInfo["framecount"])
         
-        # Update the Time Slider
-        # Position = MaxValue * (currentFrames - startFrames) / duration
-        if self.currentClipInfo:
-            fps = float(self.currentClipInfo["framerate"])
-            percent = (timecode_to_frames(timecode, fps) - timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)) / int(self.currentClipInfo["framecount"])
-            self.timeslider.SetValue(percent * self.timeslider.GetMax())   
-
+        # See if we can move the slider
+        if self.sliderMask:
+            self.sliderMask -= 1
+        else:
+            # Update the Time Slider
+            # Position = MaxValue * (currentFrames - startFrames) / duration
+            if self.currentClipInfo:
+                percent = (timecode_frames - starting_frames) / duration_frames
+                self.timeslider.SetValue(percent * self.timeslider.GetMax()) 
+        
+        # Update Elapsed Time
+        elapsed_time_frames = timecode_frames - starting_frames
+        self.timeElapsed.SetLabel(frames_to_timecode(elapsed_time_frames, fps, True))
+        
+        # Update Time Remaining 
+        self.timeRemaining.SetLabel(frames_to_timecode(duration_frames - elapsed_time_frames, fps, True))
+        
+        self.Sizer.Layout()
+        
     def OnSetTime(self, evt):
         # CueTimecode = StartTimecode + (position/MaxValue) * durationTimecode
         if self.currentClipInfo:
@@ -410,7 +441,11 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             slideFrame = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps) + \
                         slideRatio * int(self.currentClipInfo["framecount"])
             if self.kipro:
+                transportState = self.kipro.getTransporterState()[1] # Transport is paused in cueToTimecode
                 self.kipro.cueToTimecode(frames_to_timecode(slideFrame, fps))
+                if transportState == "Play":
+                    self.kipro.play()
+                self.sliderMask = 2 # Wait two updates before moving slider
 
     def OnDestroy (self, evt):
         # Cleanup Timer
