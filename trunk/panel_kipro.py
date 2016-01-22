@@ -190,9 +190,9 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.timeElapsed = wx.StaticText(self)
         self.timeRemaining = wx.StaticText(self)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(self.timeElapsed)
+        sizer.Add(self.timeElapsed, border = 5, flag=wx.LEFT)
         sizer.AddStretchSpacer()
-        sizer.Add(self.timeRemaining)
+        sizer.Add(self.timeRemaining, border = 5, flag=wx.RIGHT)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.BOTTOM)
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -272,6 +272,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.stopTimeText.Disable()
         # Prep clip
         self.OnCueClip()
+        time.sleep(0.2)
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
             
@@ -363,6 +364,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
 
     def OnPlayFrom (self, evt):
         self.OnCueStart()
+        time.sleep(0.1)
         if self.kipro:
             self.kipro.play()
             
@@ -370,6 +372,9 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
         if self.kipro:
+            # Cue to approx. 5 seconds before end time.  
+            self.kipro.cueToTimecode(frames_to_timecode(timecode_to_frames(self.stopTimeText.GetValue(), 30) - 5*30, 30))
+            time.sleep(0.2)
             self.kipro.play()
 
     def OnTimer (self, evt):
@@ -413,6 +418,9 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Times are from the full clip
             starting_frames = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)
             duration_frames = int(self.currentClipInfo["framecount"])
+            if timecode_frames == 0:
+                # Transport must be stopped
+                timecode_frames = starting_frames           
         
         # See if we can move the slider
         if self.sliderMask:
@@ -431,7 +439,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         # Update Time Remaining 
         self.timeRemaining.SetLabel(frames_to_timecode(duration_frames - elapsed_time_frames, fps, True))
         
-        self.Sizer.Layout()
+        #self.Sizer.Layout()
         
     def OnSetTime(self, evt):
         # CueTimecode = StartTimecode + (position/MaxValue) * durationTimecode
@@ -443,8 +451,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             if self.kipro:
                 transportState = self.kipro.getTransporterState()[1] # Transport is paused in cueToTimecode
                 self.kipro.cueToTimecode(frames_to_timecode(slideFrame, fps))
-                if transportState == "Play":
-                    self.kipro.play()
                 self.sliderMask = 2 # Wait two updates before moving slider
 
     def OnDestroy (self, evt):
