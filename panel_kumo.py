@@ -1,8 +1,12 @@
 import wx
 import wx.lib.scrolledpanel 
 import configparser
-import Settings
+import os
+import traceback
+
 from AJArest import kumo
+
+import Settings
 
 presetFileName = 'presets.ini'
 
@@ -101,8 +105,9 @@ class SaveSettings (wx.Frame):
         presets.optionxform = lambda option: option
         # And read from the ini file
         try:
-            presets.read(presetFileName)
+            presets.read([os.path.join(d, presetFileName) for d in Settings.data_directory_list])
         except:
+            traceback.print_exc()
             pass
             
         presetName = self.PresetName.GetValue().strip().replace(":","")
@@ -123,8 +128,12 @@ class SaveSettings (wx.Frame):
         presets["KumoPresets"][presetName] = self.settings
         
         # And save
-        with open(presetFileName, 'w') as configfile:
-            presets.write(configfile)
+        for data_directory in Settings.data_directory_list[1:]:
+            try:
+                with open(os.path.join(data_directory,presetFileName), 'w') as configfile:
+                    presets.write(configfile)
+            except:
+                traceback.print_exc()
         
         # Update parents list of presets
         self.parent.UpdatePresetList()
@@ -222,7 +231,7 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
         # And read from the ini file
         presetNames=[]
         try:
-            self.Presets.read(presetFileName)
+            self.Presets.read([os.path.join(d, presetFileName) for d in Settings.data_directory_list])
             presetNames = self.Presets.options("KumoPresets")
         except:
             pass
