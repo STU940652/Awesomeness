@@ -21,14 +21,14 @@ Config.set('projector', 'ip', '')
 Config.add_section('FilePaths')
 if "APPDATA" in os.environ:
     # For Windows
-    Config.set('FilePaths', 'DataDirectory', os.path.realpath(os.path.join(os.environ["APPDATA"], "Awesomeness")))
+    data_directory = os.path.realpath(os.path.join(os.environ["APPDATA"], "Awesomeness"))
 elif "HOME" in os.environ:
     # For *nix (untested)
-    Config.set('FilePaths', 'DataDirectory', os.path.realpath(os.path.join(os.environ["HOME"], "Awesomeness")))
+    data_directory = os.path.realpath(os.path.join(os.environ["HOME"], "Awesomeness"))
 else:
-    Config.set('FilePaths', 'DataDirectory', os.path.realpath(os.path.join('.', "Awesomeness")))
+    data_directory = os.path.realpath(os.path.join('.', "Awesomeness"))
 
-data_directory_list = ['.',  Config.get('FilePaths', 'DataDirectory')]
+data_directory_list = ['.',  data_directory]
 
 # And read from the ini file
 try:
@@ -37,21 +37,19 @@ except:
     traceback.print_exc()
     pass
 
-data_directory = Config.get('FilePaths','SecondaryDataDirectory', fallback = "")
-    
-if data_directory:
+data_directory2 = Config.get('FilePaths','SecondaryDataDirectory', fallback = "")
+if data_directory2:
     # Get data from the DataDirectory also
     try:
-        Config.read([os.path.join(data_directory,'settings.ini')])
-        data_directory_list.append(data_directory)
+        Config.read([os.path.join(data_directory2,'settings.ini')])
+        data_directory_list.append(data_directory2)
     except:
         traceback.print_exc()
         pass    
 
 def write():
-    global Config
+    global Config, data_directory
     
-    data_directory = Config.get('FilePaths', 'DataDirectory')
     if not os.path.isdir(data_directory):
         os.makedirs(data_directory)        
     
