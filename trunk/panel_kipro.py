@@ -126,6 +126,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     SavedAuxChannel = 0
     currentClipInfo = None
     sliderMask = 0
+    clipListDict = {}
+    clipList = []
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -348,7 +350,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
     def OnSelectClipButton (self, evt):
         if self.kipro:
-            self.kipro.goToClip(self.playListCombobox.GetValue())
+            self.kipro.goToClip(self.clipList[self.playListCombobox.GetSelection()])
 
     def OnTransportButton (self, evt=None):
         command = evt.GetEventObject().GetData()
@@ -376,24 +378,33 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.kipro.cueToTimecode(frames_to_timecode(timecode_to_frames(self.stopTimeText.GetValue(), 30) - 5*30, 30))
             time.sleep(0.2)
             self.kipro.play()
+            
+    def LongClipName (self, clipName):
+        try:
+            return "%-25s%-30s%s" % (clipName, 
+                                    self.clipListDict[clipName]['timestamp'], 
+                                    self.clipListDict[clipName]['duration'])
+        except:
+            return clipName
 
     def OnTimer (self, evt):
         if self.kipro:
             # Get the clip list
-            clipListDict = self.kipro.getClipList()
-            clipList = list(clipListDict.keys())
+            self.clipListDict = self.kipro.getClipList()
+            clipList = list(self.clipListDict.keys())
 
-            if self.playListCombobox.GetItems() != clipList:
-                self.playListCombobox.SetItems(clipList)
-            
+            if self.clipList != clipList:
+                self.clipList = clipList
+                self.playListCombobox.SetItems([self.LongClipName(clip) for clip in clipList])
+
             # Get the current clip name
-            currentClipName = self.kipro.getCurrentClipName().rsplit('.', 1)[0]
-            self.currentClipText.SetValue(currentClipName)
+            currentClipName = self.kipro.getCurrentClipName()
+            self.currentClipText.SetValue(self.LongClipName(currentClipName))
             
             # Store clip data
             self.currentClipInfo = None
             try:
-                self.currentClipInfo = clipListDict[currentClipName]
+                self.currentClipInfo = self.clipListDict[currentClipName]
             except:
                 pass
                 
