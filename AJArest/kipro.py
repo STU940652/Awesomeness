@@ -226,7 +226,7 @@ $ python
             top = self.asPython(response)
             entries = top["clips"]
             for entry in entries:
-                name = entry["clipname"].rsplit('.',1)[0]
+                name = entry["clipname"]
                 playlists[name] = entry
 
         return playlists
