@@ -132,7 +132,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
-        self.infoBar = wx.InfoBar(self)
         self.parent = parent
         
         # Init the kipro stuff
@@ -143,18 +142,17 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             except:
                 self.kipro = None
             
-        if self.kipro:
-            self.infoBar.ShowMessage("Connected to KiPro")
-        else:
-            self.infoBar.ShowMessage("Kipro Offline")
-            
         self.timecodeUpdateThread = None
         if self.kipro:
             self.timecodeUpdateThread = TimecodeUpdater("http://" + host, self, self.TimecodeCallback, self.OnEndClip)
             self.timecodeUpdateThread.start()
         
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        panelSizer.Add(wx.StaticText(self, -1, "KiPro"))
+        if self.kipro:
+            self.infoBar = wx.StaticText(self, -1, "KiPro: Connected to KiPro")
+        else:
+            self.infoBar = wx.StaticText(self, -1, "KiPro: Kipro Offline")
+        panelSizer.Add(self.infoBar)
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.playListCombobox = wx.ComboBox(self, style = wx.CB_READONLY|wx.CB_DROPDOWN,)
@@ -251,7 +249,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
         
         panelSizer.AddStretchSpacer()
-        panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
         #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)

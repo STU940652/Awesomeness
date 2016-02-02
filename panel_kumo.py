@@ -146,20 +146,17 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
-        self.infoBar = wx.InfoBar(self)
-        
         # Init the Kumo stuff
         host = Settings.Config.get("Kumo","ip")
         self.kumo = kumoManager("http://"+host)
         self.kumo.getNames()
         self.kumo.getSettings()
-        if self.kumo.online:
-            self.infoBar.ShowMessage("Connected to Kumo")
-        else:
-            self.infoBar.ShowMessage("Kumo Offline")
-        
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        panelSizer.Add(wx.StaticText(self, -1, "Kumo"))
+        if self.kumo.online:
+            self.infoBar = wx.StaticText(self, -1, "Kumo: Connected to Kumo")
+        else:
+            self.infoBar = wx.StaticText(self, -1, "Kumo: Kumo Offline")
+        panelSizer.Add(self.infoBar)
         
         self.PresetSelection = wx.ComboBox(self)
         panelSizer.Add(self.PresetSelection, flag=wx.EXPAND)
@@ -212,7 +209,6 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
         
         panelSizer.Add(sizer, flag = wx.EXPAND)
         panelSizer.AddStretchSpacer()
-        panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
         #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)

@@ -21,6 +21,7 @@ class ButtonWithData (wx.Button):
         
     def GetData (self):
         return self.Data
+        
 
 class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
 
@@ -31,8 +32,6 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
-        self.infoBar = wx.InfoBar(self)
-        
         #Some variables
         self.requestList=collections.deque([b"12", b"02", b"03"])
         
@@ -56,13 +55,13 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
             if len(n):
                 ChannelNames[i] = n
             
-        if self.online:
-            self.infoBar.ShowMessage("Connected to HS50")
-        else:
-            self.infoBar.ShowMessage("HS50 Offline")
                     
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        panelSizer.Add(wx.StaticText(self, -1, "Video Switcher"))
+        if self.online:
+            self.infoBar = wx.StaticText(self, -1, "Video Switcher: Connected to HS50")
+        else:
+            self.infoBar = wx.StaticText(self, -1, "Video Switcher: HS50 Offline")
+        panelSizer.Add(self.infoBar)
         
         # Program Output
         self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ChannelNames)
@@ -95,7 +94,6 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND)
         
         panelSizer.AddStretchSpacer()
-        panelSizer.Add(self.infoBar, flag = wx.EXPAND)
         self.SetSizer(panelSizer)
         self.Layout()
         #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)
