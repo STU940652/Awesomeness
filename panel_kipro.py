@@ -42,6 +42,7 @@ class ButtonWithData (wx.Button):
     
     def SetData (self, data):
         self.Data = data
+        self.SetToolTip(data.replace("Command","").strip())
         
     def GetData (self):
         return self.Data
@@ -128,6 +129,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     sliderMask = 0
     clipListDict = {}
     clipList = []
+    StaleState = True
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -207,7 +209,11 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             button = ButtonWithData(self, -1, buttonLable, size = (30,-1))
             button.SetData(buttonCommand)
             self.Bind(wx.EVT_BUTTON, self.OnTransportButton, button)
-            sizer.Add(button)        
+            sizer.Add(button)
+        sizer.AddStretchSpacer(1)
+        self.StopLock = wx.CheckBox(self, -1, label = "Stop Lock")
+        self.StopLock.SetValue(True)
+        sizer.Add(self.StopLock)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
         
         sizer = wx.FlexGridSizer(cols = 5)
@@ -351,8 +357,19 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
 
     def OnTransportButton (self, evt=None):
         command = evt.GetEventObject().GetData()
+        
+        # See if we should block the command
+        if (command == "Stop Command") and (self.StopLock.GetValue()):
+            if self.StaleState:
+                # Update Transport State if there is a command in flight
+                self.OnTimer(None)
+            if self.currentStateText.GetValue() == "Paused":
+                # Transport is paused.  Block the stop
+                return            
+        
         if self.kipro:
             self.kipro.sendTransportCommandByDescription(command)
+            self.StaleState = True
             
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(None)
@@ -407,6 +424,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 
             # Get the current transport state
             self.currentStateText.SetValue(self.kipro.getTransporterState()[1])
+            self.StaleState = False
             
     def OnFillStartTime (self, evt):
         self.startTimeText.SetValue(self.currentTimeText.GetValue())
