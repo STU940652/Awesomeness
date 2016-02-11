@@ -12,8 +12,8 @@ class PanelManager():
         self.parentSizer = parentSizer
         self.parent = parent
         self.proportion = proportion
-        self.panelMain =  wx.Panel(self.parent)
-        self.panelBlank =  wx.Panel(self.parent)
+        self.panelMain =  None
+        self.panelBlank =  None
 
         # Create panel and add it to the sizer
         if self.menuCheck.IsChecked():
@@ -23,6 +23,7 @@ class PanelManager():
             self.MainDisplayed = True
             
         else:
+            self.panelBlank =  wx.Panel(self.parent)
             self.parentSizer.Add(self.panelBlank, proportion, wx.EXPAND)
             self.parentSizer.Hide(self.panelBlank, True)
             self.MainDisplayed = False
@@ -33,9 +34,12 @@ class PanelManager():
             self.parentSizer.Replace(self.panelBlank, self.panelMain, True)
             self.parentSizer.Show(self.panelMain, True)
             self.MainDisplayed = True
+            self.panelBlank.Destroy()
+            self.panelBlank = None
             self.SetupScrolling(self.parent)
             
         else:
+            self.panelBlank =  wx.Panel(self.parent)
             self.parentSizer.Replace(self.panelMain, self.panelBlank, True)
             self.panelMain.Destroy()
             self.panelMain = wx.Panel() # We really need this, but I don't know why
