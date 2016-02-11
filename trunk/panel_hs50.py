@@ -104,6 +104,11 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         self.timer.Start(0.2e+3) # 0.2 second interval
         
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
+        
+        self.Fit()
+        s = self.Sizer.ComputeFittingWindowSize(self)
+        print (s)
+        self.SetMaxSize((-1,s[1]))
 
     def OnCut (self, evt=None):
         c = STX + b"SCUT:00" + ETX
