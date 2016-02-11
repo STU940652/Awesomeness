@@ -107,7 +107,6 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         
         self.Fit()
         s = self.Sizer.ComputeFittingWindowSize(self)
-        print (s)
         self.SetMaxSize((-1,s[1]))
 
     def OnCut (self, evt=None):
