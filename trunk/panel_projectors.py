@@ -3,6 +3,7 @@ import wx.lib.scrolledpanel
 import pjlink
 import traceback
 import Settings
+import collections
 
 class PanelProjector (wx.Panel):
 
@@ -14,6 +15,8 @@ class PanelProjector (wx.Panel):
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         panelSizer.Add(wx.StaticText(self, -1, "Projectors"))
         sizer = wx.FlexGridSizer(cols = 3, vgap = 5, hgap = 5)
+        
+        self.groups = collections.defaultdict(lambda: list())
         
         # Init the connection
         for i in range(1, 5):
@@ -34,6 +37,7 @@ class PanelProjector (wx.Panel):
                 
             # Built the UI
             name = Settings.Config.get("projector", "name%i" % i, fallback=str(i))
+            group = Settings.Config.get("projector", "group%i" % i, fallback="sides")
             sizer.Add(wx.StaticText(self, -1, name))
             
             onoffText = wx.TextCtrl (self, -1, "offline", style=wx.TE_READONLY)
@@ -44,6 +48,9 @@ class PanelProjector (wx.Panel):
             sizer.Add(shutterCheck)
                 
             self.projectors.append( (proj, onoffText, shutterCheck) )
+            if group:
+                self.groups[group].append( (proj, onoffText, shutterCheck) )
+            
 
         
         panelSizer.Add(sizer, border = 5, proportion=0, flag=wx.ALIGN_CENTER_HORIZONTAL|wx.ALL)
@@ -58,7 +65,12 @@ class PanelProjector (wx.Panel):
 
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
         
-    def SetShutter (self, shutter):
+    def SetShutter (self, shutter, group = "sides"):
+        proj_list = self.projectors
+        
+        if group and group in self.groups:
+            proj_list = self.groups[group]
+            
         for proj, onoffText, shutterCheck in self.projectors:
             if proj:
                 proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter)
