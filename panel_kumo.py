@@ -238,6 +238,10 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
         self.kumo.getSettings()
         for dest in self.destControls:
             self.destControls[dest]["enableSource"].SetLabel(self.kumo.namesSrc[self.kumo.destSet[dest]])
+            
+    def SetChannelByName (self, dst, src):
+        if (dst in self.kumo.namesDst) and (src in self.kumo.namesSrc):
+            self.kumo.setChannel(self.kumo.namesDst.index(), self.kumo.namesSrc.index(src))
 
     def OnSave (self, evt):
         settings = ""
