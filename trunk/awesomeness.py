@@ -104,7 +104,7 @@ class MainFrame (wx.Frame):
         self.panelKumo = PanelManager (self, PanelKumo, self.menuKumo, sizer) #sizer.Add(self.panelKumo, 1, wx.EXPAND)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
         self.panelHS50 = PanelManager (self, PanelHS50, self.menuHS50, sizer2) #sizer2.Add(self.panelHS50, 1, wx.EXPAND)
-        self.panelProjectors = PanelManager (self, PanelProjector, self.menuProj, sizer2, 0) #sizer2.Add(self.panelProjectors, 0, wx.EXPAND)
+        self.panelProjectors = PanelManager (self, PanelProjector, self.menuProj, sizer2) #sizer2.Add(self.panelProjectors, 0, wx.EXPAND)
         self.panelKiPro = PanelManager (self, PanelKipro, self.menuKiPro, sizer2) #sizer2.Add(self.panelKipro, 1, wx.EXPAND)
         sizer.Add(sizer2, 1, wx.EXPAND)
         self.SetSizer(sizer)
@@ -112,6 +112,7 @@ class MainFrame (wx.Frame):
         
         self.panelKumo.SetupScrolling(self)
         self.panelHS50.SetupScrolling(self)
+        self.panelProjectors.SetupScrolling(self)
         self.panelKiPro.SetupScrolling(self)
     
     def OnKumoMenuCheck (self, evt):

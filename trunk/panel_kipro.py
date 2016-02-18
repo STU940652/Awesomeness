@@ -555,8 +555,11 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.stopTimeText.SetValue(self.currentTimeText.GetValue())
         
     def TimecodeCallback (self, timecode):
-        self.currentTimeText.SetValue(timecode)        
-        fps = float(self.currentClipInfo["framerate"])
+        self.currentTimeText.SetValue(timecode)
+        if self.currentClipInfo:    
+            fps = float(self.currentClipInfo["framerate"])
+        else:
+            fps = 29.95
         timecode_frames = timecode_to_frames(timecode, fps)
         if self.ShowingClip:
             # Times are from the selected part of the clip
@@ -564,8 +567,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             duration_frames = timecode_to_frames(self.stopTimeText.GetValue(), fps) - timecode_to_frames(self.startTimeText.GetValue(), fps)
         else:
             # Times are from the full clip
-            starting_frames = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)
-            duration_frames = int(self.currentClipInfo["framecount"])
+            if self.currentClipInfo:
+                starting_frames = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps)
+                duration_frames = int(self.currentClipInfo["framecount"])
+            else:
+                starting_frames = 0
+                duration_frames = 1
             if timecode_frames == 0:
                 # Transport must be stopped
                 timecode_frames = starting_frames           

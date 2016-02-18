@@ -5,12 +5,12 @@ import traceback
 import Settings
 import collections
 
-class PanelProjector (wx.Panel):
+class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
 
     projectors = []
 
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         panelSizer.Add(wx.StaticText(self, -1, "Projectors"))
@@ -19,7 +19,7 @@ class PanelProjector (wx.Panel):
         self.groups = collections.defaultdict(lambda: list())
         
         # Init the connection
-        for i in range(1, 5):
+        for i in range(1, 15):
             host = Settings.Config.get("projector","ip%i" % i, fallback=None)
             get_password = lambda: 'panasonic' # default password
             
@@ -69,7 +69,7 @@ class PanelProjector (wx.Panel):
         # Start a timer to get latest setting from HS50
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(1e+3) # 1 second interval
+        self.timer.Start(10e+3) # 10 second interval
 
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
         
@@ -102,8 +102,12 @@ class PanelProjector (wx.Panel):
         for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
             if proj:
                 onoffText.SetValue(proj.get_power())
-                a, v = proj.get_mute()
-                shutterCheck.SetValue(a)
+                try:
+                    a, v = proj.get_mute()
+                    shutterCheck.Enable()
+                    shutterCheck.SetValue(a)
+                except:
+                    shutterCheck.Disable()
 
     def OnDestroy (self, evt):
         # Cleanup Timer
