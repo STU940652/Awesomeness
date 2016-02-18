@@ -14,7 +14,7 @@ class PanelProjector (wx.Panel):
 
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         panelSizer.Add(wx.StaticText(self, -1, "Projectors"))
-        sizer = wx.FlexGridSizer(cols = 3, vgap = 5, hgap = 5)
+        sizer = wx.FlexGridSizer(cols = 5, vgap = 5, hgap = 5)
         
         self.groups = collections.defaultdict(lambda: list())
         
@@ -46,10 +46,18 @@ class PanelProjector (wx.Panel):
             shutterCheck = wx.CheckBox(self, -1, label = "Shuttered")
             self.Bind(wx.EVT_CHECKBOX, self.OnShutter, shutterCheck)
             sizer.Add(shutterCheck)
+            
+            on_button = wx.Button (self, -1, "On")
+            self.Bind(wx.EVT_BUTTON, self.OnDisplayOnButton, on_button)
+            sizer.Add(on_button)
                 
-            self.projectors.append( (proj, onoffText, shutterCheck) )
+            off_button = wx.Button (self, -1, "Off")
+            self.Bind(wx.EVT_BUTTON, self.OnDisplayOffButton, off_button)
+            sizer.Add(off_button)
+                
+            self.projectors.append( (proj, onoffText, shutterCheck, on_button, off_button) )
             if group:
-                self.groups[group].append( (proj, onoffText, shutterCheck) )
+                self.groups[group].append( (proj, onoffText, shutterCheck, on_button, off_button) )
             
 
         
@@ -71,17 +79,27 @@ class PanelProjector (wx.Panel):
         if group and group in self.groups:
             proj_list = self.groups[group]
             
-        for proj, onoffText, shutterCheck in self.projectors:
+        for proj, onoffText, shutterCheck, on_button, off_button in proj_list:
             if proj:
                 proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter)
                 
     def OnShutter (self, evt):
-        for proj, onoffText, shutterCheck in self.projectors:
+        for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
             if proj and (shutterCheck == evt.GetEventObject()):
                 proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutterCheck.GetValue())
         
+    def OnDisplayOnButton (self, evt):
+        for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
+            if proj and (on_button == evt.GetEventObject()):
+                proj.set_power("on")
+        
+    def OnDisplayOffButton (self, evt):
+        for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
+            if proj and (off_button == evt.GetEventObject()):
+                proj.set_power("off")
+        
     def OnTimer (self, evt):
-        for proj, onoffText, shutterCheck in self.projectors:
+        for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
             if proj:
                 onoffText.SetValue(proj.get_power())
                 a, v = proj.get_mute()
