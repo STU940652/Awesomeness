@@ -104,7 +104,11 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
     def OnTimer (self, evt):
         for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
             if proj:
-                onoffText.SetValue(proj.get_power())
+                try:
+                    onoffText.SetValue(proj.get_power())
+                except:
+                    onoffText.SetValue("offline")
+                    
                 try:
                     a, v = proj.get_mute()
                     shutterCheck.Enable()
