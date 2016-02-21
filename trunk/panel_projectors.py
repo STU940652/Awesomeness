@@ -67,6 +67,7 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
         self.Layout()
         
         # Start a timer to get latest setting from HS50
+        self.OnTimer(None)
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(10e+3) # 10 second interval
@@ -92,11 +93,13 @@ class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
         for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
             if proj and (on_button == evt.GetEventObject()):
                 proj.set_power("on")
+        self.OnTimer(None)
         
     def OnDisplayOffButton (self, evt):
         for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
             if proj and (off_button == evt.GetEventObject()):
                 proj.set_power("off")
+        self.OnTimer(None)
         
     def OnTimer (self, evt):
         for proj, onoffText, shutterCheck, on_button, off_button in self.projectors:
