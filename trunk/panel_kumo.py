@@ -242,7 +242,13 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
     def SetChannelByName (self, dst, src):
         if (dst in self.kumo.namesDst) and (src in self.kumo.namesSrc):
             self.kumo.setChannel(self.kumo.namesDst.index(), self.kumo.namesSrc.index(src))
-
+        else:
+            print ("In SetChannelByName")
+            if (dst not in self.kumo.namesDst):
+                print ("Could not find destination", dst, "in", self.kumo.namesDst)
+            if (src not in self.kumo.namesSrc):    
+                 print ("Could not find source", src, "in", self.kumo.namesSrc)
+              
     def OnSave (self, evt):
         settings = ""
         for dest in self.destControls:
