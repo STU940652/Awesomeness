@@ -446,7 +446,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 
             if self.parent.panelKumo.MainDisplayed:
                 # Kumo: Main Projector to CGM
-                self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM', ')
+                self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')
         
         
         # Stop playback
@@ -592,7 +592,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.timeElapsed.SetLabel(frames_to_timecode(elapsed_time_frames, fps, True))
         
         # Update Time Remaining 
-        self.timeRemaining.SetLabel(frames_to_timecode(duration_frames - elapsed_time_frames, fps, True))
+        if (duration_frames == 0):
+            self.timeRemaining.SetLabel('')
+        else:
+            self.timeRemaining.SetLabel(frames_to_timecode(duration_frames - elapsed_time_frames, fps, True))
         
         #self.Sizer.Layout()
         
