@@ -5,12 +5,12 @@ import traceback
 import Settings
 import collections
 
-class PanelProjector (wx.lib.scrolledpanel.ScrolledPanel):
+class PanelProjector (wx.Panel):
 
     projectors = []
 
     def __init__(self, parent):
-        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
+        wx.Panel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         panelSizer.Add(wx.StaticText(self, -1, "Projectors"))
