@@ -47,13 +47,20 @@ class PanelProjector (wx.Panel):
             self.Bind(wx.EVT_CHECKBOX, self.OnShutter, shutterCheck)
             sizer.Add(shutterCheck)
             
-            on_button = wx.Button (self, -1, "On")
-            self.Bind(wx.EVT_BUTTON, self.OnDisplayOnButton, on_button)
-            sizer.Add(on_button)
-                
-            off_button = wx.Button (self, -1, "Off")
-            self.Bind(wx.EVT_BUTTON, self.OnDisplayOffButton, off_button)
-            sizer.Add(off_button)
+            
+            if Settings.Config.getboolean("projector", "onoffcontrol", fallback=False):            
+                on_button = wx.Button (self, -1, "On")
+                self.Bind(wx.EVT_BUTTON, self.OnDisplayOnButton, on_button)
+                sizer.Add(on_button)
+                    
+                off_button = wx.Button (self, -1, "Off")
+                self.Bind(wx.EVT_BUTTON, self.OnDisplayOffButton, off_button)
+                sizer.Add(off_button)
+            else:
+                on_button = None
+                off_button = None
+                sizer.AddStretchSpacer(0)
+                sizer.AddStretchSpacer(0)
                 
             self.projectors.append( (proj, onoffText, shutterCheck, on_button, off_button) )
             if group:
