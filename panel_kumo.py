@@ -241,7 +241,7 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
             
     def SetChannelByName (self, dst, src):
         if (dst in self.kumo.namesDst) and (src in self.kumo.namesSrc):
-            self.kumo.setChannel(self.kumo.namesDst.index(), self.kumo.namesSrc.index(src))
+            self.kumo.setChannel(self.kumo.namesDst.index(dst), self.kumo.namesSrc.index(src))
         else:
             print ("In SetChannelByName")
             if (dst not in self.kumo.namesDst):
