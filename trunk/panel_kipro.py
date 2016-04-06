@@ -402,6 +402,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.parent.panelProjectors.MainDisplayed:
             # Main Projector: Shutter
             self.parent.panelProjectors.panelMain.SetShutter(True, "main")
+            time.sleep(5)
             
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Main Projector to PGM
@@ -447,6 +448,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             if self.parent.panelKumo.MainDisplayed:
                 # Kumo: Main Projector to CGM
                 self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')
+                time.sleep(5)
         
         
         # Stop playback
