@@ -382,6 +382,13 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
             
+        if self.parent.panelProjectors.MainDisplayed:
+            # Main Projector: Shutter
+            # The projector appears to require some delay between shuttering an unshuttering.
+            # So we shutter early
+            self.parent.panelProjectors.panelMain.SetShutter(True, "main")
+            time.sleep(1) # May need to adjust this
+            
         if self.parent.panelHS50.MainDisplayed:
             # Prep Video Switcher.  Set Preview to the correct channel
             self.parent.panelHS50.panelMain.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
@@ -399,11 +406,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Video Switcher: AUX to CGM
             self.parent.panelHS50.panelMain.ChangeOutput('AUX', 'CGM')
                 
-        if self.parent.panelProjectors.MainDisplayed:
-            # Main Projector: Shutter
-            self.parent.panelProjectors.panelMain.SetShutter(True, "main")
-            time.sleep(5)
-            
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Main Projector to PGM
             self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', ' 16: SWTCHR PGM')
@@ -447,9 +449,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 
             if self.parent.panelKumo.MainDisplayed:
                 # Kumo: Main Projector to CGM
-                self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')
-                time.sleep(5)
-        
+                self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')  
+                time.sleep(1)                
         
         # Stop playback
         if self.timecodeUpdateThread:
@@ -458,10 +459,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.kipro.stop()
             
         if self.ShowingClip:
-            if self.parent.panelProjectors.MainDisplayed:
-                # Main Projector: Un-Shutter
-                self.parent.panelProjectors.panelMain.SetShutter(False, "main")
-
             if self.parent.panelHS50.MainDisplayed:            
                 # Video Switcher: Restore AUX
                 self.parent.panelHS50.panelMain.ChangeOutput('AUX', self.SavedAuxChannel)
@@ -470,6 +467,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 self.parent.panelHS50.panelMain.OnCut()
                 self.parent.panelHS50.panelMain.OnFTB()
             
+            if self.parent.panelProjectors.MainDisplayed:
+                # Main Projector: Un-Shutter
+                # The projector appears to require some delay between shuttering an unshuttering.
+                time.sleep(2) # May need to adjust this
+                self.parent.panelProjectors.panelMain.SetShutter(False, "main")
+
         self.ShowingClip = False
         self.timeslider.Enable()
         self.startTimeText.Enable()
