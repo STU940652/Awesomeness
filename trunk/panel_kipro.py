@@ -413,6 +413,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.parent.panelProjectors.MainDisplayed:
             # Main Projector: Unshutter
             self.parent.panelProjectors.panelMain.SetShutter(False, "main")
+            time.sleep(0.5)
         
         if self.kipro:
             # Start clip
