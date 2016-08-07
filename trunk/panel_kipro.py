@@ -202,11 +202,14 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                     #("<",   "Play Reverse Command"),
                     ("|<",  "Single Step Reverse"),
                     ("X",   "Stop Command"),
+                    ("O",   "Record Command"),
                     (">|",  "Single Step Forward"),
                     (">",   "Play Command"),
                     (">>",  "Fast Forward") )
         for buttonLable, buttonCommand in buttons:
             button = ButtonWithData(self, -1, buttonLable, size = (30,-1))
+            if (buttonCommand ==  "Record Command"):
+                button.SetForegroundColour(wx.RED)
             button.SetData(buttonCommand)
             self.Bind(wx.EVT_BUTTON, self.OnTransportButton, button)
             sizer.Add(button)
