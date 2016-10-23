@@ -4,7 +4,13 @@ import time
 import configparser
 import threading
 import Settings
+import os
+import os.path
+import collections
+
 from AJArest import kipro
+
+presetFileName = 'KiPro_presets.ini'
 
 # Time conversion helper
 def frames_to_timecode (frames, fps, hms_only = False):
@@ -157,6 +163,19 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         panelSizer.Add(self.infoBar)
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.presetListCombobox = wx.ComboBox(self, style = wx.CB_READONLY|wx.CB_DROPDOWN)
+        self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.UpdatePresetList, self.presetListCombobox)
+        sizer.Add(self.presetListCombobox, proportion = 1, flag=wx.EXPAND)
+        self.presetLoadButton = wx.Button (self, -1, "Load Preset")
+        self.Bind(wx.EVT_BUTTON, self.LoadPreset, self.presetLoadButton)
+        sizer.Add(self.presetLoadButton)
+        self.presetSaveButton = wx.Button (self, -1, "Save Preset")
+        self.Bind(wx.EVT_BUTTON, self.SavePreset, self.presetSaveButton)
+        sizer.Add(self.presetSaveButton)
+        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        self.UpdatePresetList()
+        
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.playListCombobox = wx.ComboBox(self, style = wx.CB_READONLY|wx.CB_DROPDOWN,)
         sizer.Add(self.playListCombobox, proportion = 1, flag=wx.EXPAND)
         self.cuePlaylistButton = wx.Button (self, -1, "Select")
@@ -271,7 +290,68 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.timer.Start(2e+3) # 2 second interval
         
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
+        
+    def UpdatePresetList (self, evt=None):
+        # Get preset settings if they exist
+        Presets=configparser.SafeConfigParser(delimiters = ('='))
+        Presets.optionxform = lambda option: option
+        Presets.read([os.path.join(d, presetFileName) for d in Settings.data_directory_list])
+        
+        if "KiProPresets" in Presets:
+            presetNames = list(Presets["KiProPresets"])
+        else:
+            presetNames = []
+            
+        self.presetListCombobox.Set([n.strip("'") for n in presetNames])
+     
+    def SavePreset (self, evt):
+        thisPreset = "'%30s ~ %15s ~ %15s'" % (
+                        self.playListCombobox.GetValue(),
+                        self.startTimeText.GetValue(),
+                        self.stopTimeText.GetValue()
+                        )
+                        
+        # Get preset settings if they exist
+        Presets=configparser.SafeConfigParser(delimiters = ('='))
+        Presets.optionxform = lambda option: option
+        Presets.read([os.path.join(d, presetFileName) for d in Settings.data_directory_list])
+        
+        if "KiProPresets" in Presets:
+            presetNames = list(Presets["KiProPresets"])
+        else:
+            presetNames = []
+        presetNames.insert(0, thisPreset)
+        presetNames = presetNames[:10]
+        
+        Presets["KiProPresets"]=collections.OrderedDict( (p, "") for  p in presetNames) # {p: '' for p in presetNames}
+
+        for data_directory in Settings.data_directory_list[1:]:
+            try:
+                with open(os.path.join(data_directory,presetFileName), 'w') as configfile:
+                    Presets.write(configfile)
+            except:
+                traceback.print_exc()  
+                
+        self.presetListCombobox.Set([n.strip("'") for n in presetNames])
+        self.presetListCombobox.SetValue(thisPreset.strip("'"))
+        
+    def LoadPreset (self, evt):
+        # If we are playing, don't mess with anything
+        if "play" in self.currentStateText.GetValue().lower():
+            return
     
+        preset = self.presetListCombobox.GetValue()
+        try:
+            clip_name, start, stop = preset.split(' ~ ')
+        except ValueError:
+            return
+        
+        self.playListCombobox.SetValue(clip_name.strip())
+        if self.playListCombobox.GetValue() == clip_name.strip():
+            self.OnSelectClipButton()
+        self.startTimeText.SetValue(start.strip())
+        self.stopTimeText.SetValue(stop.strip())
+        
     def OnCueClip (self, evt=None):
         if self.kipro:
             self.kipro.cueToTimecode(self.startTimeText.GetValue())
@@ -482,7 +562,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.startTimeText.Enable()
         self.stopTimeText.Enable()
             
-    def OnSelectClipButton (self, evt):
+    def OnSelectClipButton (self, evt=None):
         if self.kipro:
             self.kipro.goToClip(self.clipList[self.playListCombobox.GetSelection()])
 
