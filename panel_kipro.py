@@ -695,6 +695,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             slideRatio = self.timeslider.GetValue() / self.timeslider.GetMax()
             slideFrame = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps) + \
                         slideRatio * int(self.currentClipInfo["framecount"])
+            # Some debug info
+            print (fps, slideRatio, slideFrame, timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps), int(self.currentClipInfo["framecount"], frames_to_timecode(slideFrame, fps))
             if self.kipro:
                 transportState = self.kipro.getTransporterState()[1] # Transport is paused in cueToTimecode
                 self.kipro.cueToTimecode(frames_to_timecode(slideFrame, fps))
