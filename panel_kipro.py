@@ -238,6 +238,9 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         sizer.Add(self.StopLock)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
         
+        sizer_h = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_v = wx.BoxSizer(wx.VERTICAL)
+        
         sizer = wx.FlexGridSizer(cols = 5)
         sizer.Add(wx.StaticText(self, -1, "Start Time"))
         self.startTimeText = wx.TextCtrl (self, value = "00:00:00.000")
@@ -262,7 +265,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.stopTimePlayToButton = wx.Button (self, -1, "Play To")
         self.Bind(wx.EVT_BUTTON, self.OnPlayTo, self.stopTimePlayToButton)        
         sizer.Add(self.stopTimePlayToButton)        
-        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        sizer_v.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
                 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.cueClipButton = wx.Button (self, -1, "Cue Clip")
@@ -275,9 +278,15 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.Bind(wx.EVT_BUTTON, self.OnEndClip, self.cancelClipButton)
         sizer.Add(self.cancelClipButton)
         sizer.AddStretchSpacer(1)
-        self.ScreenMode = wx.RadioBox(self,label = "Screen Mode", choices = ['1-screen', '3-screen'])
-        sizer.Add(self.ScreenMode)
-        panelSizer.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        sizer_v.Add(sizer, border = 5, flag=wx.EXPAND|wx.ALL)
+        sizer_h.Add(sizer_v, flag=wx.EXPAND)
+
+        sizer_h.AddStretchSpacer(1)
+        
+        self.ScreenMode = wx.RadioBox(self,label = "Screen Mode", choices = ['1-screen', '3-screen'], style=wx.RA_SPECIFY_ROWS)
+        self.ScreenMode.SetSelection( 1)
+        sizer_h.Add(self.ScreenMode)
+        panelSizer.Add(sizer_h, border = 5, flag=wx.EXPAND|wx.ALL)
         
         panelSizer.AddStretchSpacer()
         self.SetSizer(panelSizer)
@@ -696,7 +705,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             slideFrame = timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps) + \
                         slideRatio * int(self.currentClipInfo["framecount"])
             # Some debug info
-            print (fps, slideRatio, slideFrame, timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps), int(self.currentClipInfo["framecount"], frames_to_timecode(slideFrame, fps))
+            print (fps, slideRatio, slideFrame, timecode_to_frames(self.currentClipInfo["attributes"]["Starting TC"], fps), int(self.currentClipInfo["framecount"], frames_to_timecode(slideFrame, fps)))
             if self.kipro:
                 transportState = self.kipro.getTransporterState()[1] # Transport is paused in cueToTimecode
                 self.kipro.cueToTimecode(frames_to_timecode(slideFrame, fps))
