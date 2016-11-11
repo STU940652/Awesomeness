@@ -14,7 +14,7 @@ class PanelProjector (wx.Panel):
 
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         panelSizer.Add(wx.StaticText(self, -1, "Projectors"))
-        sizer = wx.FlexGridSizer(cols = 5, vgap = 5, hgap = 5)
+        sizer = wx.FlexGridSizer(cols = 10, vgap = 5, hgap = 5)
         
         self.groups = collections.defaultdict(lambda: list())
         
