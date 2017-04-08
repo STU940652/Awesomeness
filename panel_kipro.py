@@ -300,6 +300,15 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
         
+        # Test
+        if False:
+            if self.parent.panelProjectors.MainDisplayed:
+                old = self.parent.panelProjectors.panelMain.GetInput("sides")
+                print (old)
+                self.parent.panelProjectors.panelMain.SetInput("DIGITAL 1", "sides")
+                time.sleep(5)
+                self.parent.panelProjectors.panelMain.SetInput(old, "sides")
+        
     def UpdatePresetList (self, evt=None):
         # Get preset settings if they exist
         Presets=configparser.SafeConfigParser(delimiters = ('='))
