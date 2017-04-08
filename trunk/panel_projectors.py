@@ -101,28 +101,31 @@ class PanelProjector (wx.Panel):
                 proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutterCheck.GetValue())
         
     def SetInput (self, s, group):
-        input_name, input_index = s.split(" ")
         proj_list = self.groups[group]
+        
+        if isinstance(s, str):
+            s=[s]
             
-        for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in proj_list:
+        for idx in range(len(proj_list)):
+            proj, onoffText, shutterCheck, on_button, off_button, inputCombo = proj_list[idx]
+            input_name, input_index = s[idx%len(s)].split(" ")
             if proj:
                 proj.set_input(input_name, input_index)
             
-    def GetInput (self, s, group):
-        input_name, input_index = s.split(" ")
+    def GetInput (self, group):
         proj_list = self.groups[group]
-        
+
         ret_val = []
         for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in proj_list:
             if proj:
                 ret_val.append("%s %i" % proj.get_input())
+        return ret_val
             
     def OnInputChange (self, evt):
         for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in self.projectors:
             if proj and (inputCombo == evt.GetEventObject()):
-                #print (inputCombo.GetValue())
-                pass
-                # proj.set_input(inputCombo.GetValue().split(" "))
+                source, number = inputCombo.GetValue().split(" ")
+                proj.set_input(source, number)
         
     def OnDisplayOnButton (self, evt):
         for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in self.projectors:
