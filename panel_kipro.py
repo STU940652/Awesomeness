@@ -130,12 +130,14 @@ class TimecodeUpdater(threading.Thread):
 class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     kipro = None
     ShowingClip = False
-    SavedAuxChannel = 0
     currentClipInfo = None
     sliderMask = 0
     clipListDict = {}
     clipList = []
     StaleState = True
+    SideProjectorsKumoSource = None
+    SideProjectorsInputSource = None
+    SideProjectorsShutters = None
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
@@ -373,106 +375,34 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
     def OnCueClip (self, evt=None):
         if self.kipro:
             self.kipro.cueToTimecode(self.startTimeText.GetValue())
- 
+             
     def OnShowClip (self, evt):
-        if self.ScreenMode.GetSelection() == 0:
-            return self.OnShowClip_1(evt)
-        else:
-            return self.OnShowClip_3(evt)
-
-    def OnEndClip (self, evt=None):
-        if self.ScreenMode.GetSelection() == 0:
-            return self.OnEndClip_1(evt)
-        else:
-            return self.OnEndClip_3(evt)
- 
-    def OnShowClip_1 (self, evt):
-        self.ShowingClip = True
-        self.timeslider.Disable()
-        self.startTimeText.Disable()
-        self.stopTimeText.Disable()
-        # Prep clip
-        self.OnCueClip()
-        time.sleep(0.2)
-        if self.timecodeUpdateThread:
-            self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
-            
-        if self.parent.panelHS50.MainDisplayed:
-            # Prep Video Switcher.  Set Preview to the correct channel
-            self.parent.panelHS50.panelMain.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
-        
-            # Video Switcher PGM Fade-to-Black
-            self.parent.panelHS50.panelMain.OnFTB()
-            
-            # Wait for fade to complete
-            time.sleep(1)
-            
-            # Video Switcher: Get and store AUX channel
-            self.SavedAuxChannel = self.parent.panelHS50.panelMain.AUX_radio.GetSelection() # Returns number
-            self.SavedAuxChannel = self.parent.panelHS50.panelMain.AUX_radio.GetItemLabel(self.SavedAuxChannel) # Returns label
-            
-            # Video Switcher: AUX to PGM
-            self.parent.panelHS50.panelMain.ChangeOutput('AUX', 'PGM')
-                
-        # TODO: Audio Mixer: Fade Out
-            
-        # Start clip
-        if self.kipro:
-            self.kipro.play()
-            
-        if self.parent.panelHS50.MainDisplayed:
-            # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-            self.parent.panelHS50.panelMain.OnCut()
-            self.parent.panelHS50.panelMain.OnFTB()
-        
-        # TODO: Audio Mixer: Fade In
-        
-        if self.parent.panelProjectors.MainDisplayed:
-            # Side Projectors: Un-shutter
-            self.parent.panelProjectors.panelMain.SetShutter(False)
-            
-    def OnEndClip_1 (self, evt=None):
-        if self.ShowingClip:
-            if self.parent.panelHS50.MainDisplayed:
-                # Video Switcher: Fade-to-black
-                self.parent.panelHS50.panelMain.OnFTB()
-            
-            # TODO: Audio Mixer: Fade Out
-            
-            # Wait for fade to complete.  Cut it a little short
-            time.sleep(0.75)
-            
-        # Stop playback
-        if self.timecodeUpdateThread:
-            self.timecodeUpdateThread.setStopTime(None)
-        if self.kipro:
-            self.kipro.stop()
-            
-        if self.ShowingClip:
-            if self.parent.panelProjectors.MainDisplayed:
-                # Side Projectors: Shutter
-                self.parent.panelProjectors.panelMain.SetShutter(True)
-
-            if self.parent.panelHS50.MainDisplayed:
-                # Video Switcher: Restore AUX
-                self.parent.panelHS50.panelMain.ChangeOutput('AUX', self.SavedAuxChannel)
-                
-                # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-                self.parent.panelHS50.panelMain.OnCut()
-                self.parent.panelHS50.panelMain.OnFTB()
-            
-        self.ShowingClip = False
-        self.timeslider.Enable()
-        self.startTimeText.Enable()
-        self.stopTimeText.Enable()
-            
-    def OnShowClip_3 (self, evt):
         """
         This is the 3-screen version of Show Clip
         
         The side screens are sourced from the HS50 Aux output.  The center is directly
         from the Kumo.
         """
+        
+        """
+        Converting to a single path.  Make no assumptions as the state at the
+        beginning.  Need to store:
+            X 1) Center projector source (from Kumo)
+            2) Side projector source (from Kumo)
+            3) Side projector input (from HS50)
+            4) Side projector shutter/un-shutter
+        
+        We are no longer using the Aux output of the HS50.  This is becasue CGM
+        at the switcher is for keying, e.g. has no background.  So all the projector
+        switching is from the Kumo, while the projectors are shuttered.
+        
+        On Show, the center projector is completly transitoned before the sides.  That 
+        way the audience has something to look at.  
+        
+        On End, the center is again completly transitioned before the sides.  So there
+        will be a bit of time where all three screens show CGM-Main.
+        """
+        
         self.ShowingClip = True
         self.timeslider.Disable()
         self.startTimeText.Disable()
@@ -499,13 +429,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
             # Wait for fade to complete
             time.sleep(1)
-            
-            # Video Switcher: Get and store AUX channel (normally a frame memory)
-            self.SavedAuxChannel = self.parent.panelHS50.panelMain.AUX_radio.GetSelection() # Returns number
-            self.SavedAuxChannel = self.parent.panelHS50.panelMain.AUX_radio.GetItemLabel(self.SavedAuxChannel) # Returns label
-            
-            # Video Switcher: AUX to CGM
-            self.parent.panelHS50.panelMain.ChangeOutput('AUX', 'CGM')
                 
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Main Projector to PGM
@@ -524,14 +447,35 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
             self.parent.panelHS50.panelMain.OnCut()
             self.parent.panelHS50.panelMain.OnFTB()
+            
+        ### Center display is now complete.  Now switch the sides.
+        # Get current Kumo side projector source
+        self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ SIDES')
         
-        # TODO: Audio Mixer: Fade In
+        # Get current Side projector inputs
+        self.SideProjectorsInputSource =  self.parent.panelProjectors.panelMain.GetInput("sides")
+         
+        # Get current side projectors shutter
+        self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.SetShutter("sides")
+        
+        if self.parent.panelProjectors.MainDisplayed:
+            # Side Projectors: Shutter to hide the transition
+            self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
+            time.sleep(1.0)
+            self.parent.panelProjectors.panelMain.SetInput("DIGITAL 1", "sides")
+            
+        if self.parent.panelKumo.MainDisplayed:
+            # Kumo: Set Side Projectors to CGM
+            # TODO: Bad name?
+            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ SIDES', '  5: CG 1 PGM')
+        
+        time.sleep(4.0)
         
         if self.parent.panelProjectors.MainDisplayed:
             # Side Projectors: Un-shutter (Legacy, just in case)
             self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
             
-    def OnEndClip_3 (self, evt=None):
+    def OnEndClip (self, evt=None):
         """
         This is the 3-screen version of End Clip
         """
@@ -539,8 +483,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             if self.parent.panelHS50.MainDisplayed:
                 # Video Switcher: Fade-to-black
                 self.parent.panelHS50.panelMain.OnFTB()
-            
-            # TODO: Audio Mixer: Fade Out
             
             # Wait for fade to complete.  Cut it a little short
             time.sleep(0.75)
@@ -562,9 +504,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
         if self.ShowingClip:
             if self.parent.panelHS50.MainDisplayed:            
-                # Video Switcher: Restore AUX
-                self.parent.panelHS50.panelMain.ChangeOutput('AUX', self.SavedAuxChannel)
-                
                 # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
                 self.parent.panelHS50.panelMain.OnCut()
                 self.parent.panelHS50.panelMain.OnFTB()
@@ -574,6 +513,24 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 # The projector appears to require some delay between shuttering an unshuttering.
                 time.sleep(2) # May need to adjust this
                 self.parent.panelProjectors.panelMain.SetShutter(False, "main")
+                
+        ### Center display is now complete.  Now switch the sides.
+        if self.parent.panelProjectors.MainDisplayed:
+            # Side Projectors: Shutter to hide the transition
+            self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
+            time.sleep(1.0)
+            self.parent.panelProjectors.panelMain.SetInput(self.SideProjectorsInputSource, "sides")
+            
+        if self.parent.panelKumo.MainDisplayed:
+            # Kumo: Set Side Projectors to CGM
+            # TODO: Bad name?
+            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ SIDES', self.SideProjectorsKumoSource)
+        
+        time.sleep(4.0)
+        
+        if self.parent.panelProjectors.MainDisplayed:
+            # Side Projectors: Un-shutter (Legacy, just in case)
+            self.parent.panelProjectors.panelMain.SetShutter(False, "sides") # TODO" self.SideProjectorsShutters
 
         self.ShowingClip = False
         self.timeslider.Enable()

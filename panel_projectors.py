@@ -94,6 +94,20 @@ class PanelProjector (wx.Panel):
         for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in proj_list:
             if proj:
                 proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter)
+
+    def GetShutter (self, group = "sides"):
+        proj_list = self.projectors
+        shutters = []
+        
+        if group and group in self.groups:
+            proj_list = self.groups[group]
+            
+        for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in proj_list:
+            if proj:
+                shutters.append(proj.get_mute())
+                
+        print shutters
+        return shutters
                 
     def OnShutter (self, evt):
         for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in self.projectors:
