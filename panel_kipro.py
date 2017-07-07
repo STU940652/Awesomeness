@@ -418,8 +418,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # The projector appears to require some delay between shuttering an unshuttering.
             # So we shutter early
             self.parent.panelProjectors.panelMain.SetShutter(True, "main")
-            time.sleep(1) # May need to adjust this
+            #time.sleep(1) # May need to adjust this
             
+        if self.parent.panelKumo.MainDisplayed:
+            # Kumo: Set Main Projector to PGM
+            self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', ' 16: SWTCHR PGM')
+        
         if self.parent.panelHS50.MainDisplayed:
             # Prep Video Switcher.  Set Preview to the correct channel
             self.parent.panelHS50.panelMain.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
@@ -430,10 +434,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Wait for fade to complete
             time.sleep(1)
                 
-        if self.parent.panelKumo.MainDisplayed:
-            # Kumo: Set Main Projector to PGM
-            self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', ' 16: SWTCHR PGM')
-        
         if self.parent.panelProjectors.MainDisplayed:
             # Main Projector: Unshutter
             self.parent.panelProjectors.panelMain.SetShutter(False, "main")
@@ -451,12 +451,15 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         ### Center display is now complete.  Now switch the sides.
         # Get current Kumo side projector source
         self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ SIDES')
+        print ("self.SideProjectorsKumoSource", self.SideProjectorsKumoSource)
         
         # Get current Side projector inputs
         self.SideProjectorsInputSource =  self.parent.panelProjectors.panelMain.GetInput("sides")
+        print ("self.SideProjectorsInputSource", self.SideProjectorsInputSource)
          
         # Get current side projectors shutter
-        self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.SetShutter("sides")
+        self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.GetShutter("sides")
+        print ("self.SideProjectorsShutters", self.SideProjectorsShutters)
         
         if self.parent.panelProjectors.MainDisplayed:
             # Side Projectors: Shutter to hide the transition
@@ -472,7 +475,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         time.sleep(4.0)
         
         if self.parent.panelProjectors.MainDisplayed:
-            # Side Projectors: Un-shutter (Legacy, just in case)
+            # Side Projectors: Un-shutter
             self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
             
     def OnEndClip (self, evt=None):
@@ -494,7 +497,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             if self.parent.panelKumo.MainDisplayed:
                 # Kumo: Main Projector to CGM
                 self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')  
-                time.sleep(1)                
+                # time.sleep(1) # Don't delay here, in case the clip ends.             
         
         # Stop playback
         if self.timecodeUpdateThread:
