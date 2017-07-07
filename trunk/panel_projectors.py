@@ -49,10 +49,11 @@ class PanelProjector (wx.Panel):
             
             inputCombo = wx.ComboBox(self, -1, style=wx.CB_READONLY)
             sizer.Add(inputCombo)
-            for input_type, input_index in proj.get_inputs():
-                inputCombo.Append("%s %i" % (input_type, input_index))
-            inputCombo.SetValue("%s %i" % proj.get_input())
-            self.Bind(wx.EVT_COMBOBOX, self.OnInputChange, inputCombo)
+            if proj:
+                for input_type, input_index in proj.get_inputs():
+                    inputCombo.Append("%s %i" % (input_type, input_index))
+                inputCombo.SetValue("%s %i" % proj.get_input())
+                self.Bind(wx.EVT_COMBOBOX, self.OnInputChange, inputCombo)
             
             if Settings.Config.getboolean("projector", "onoffcontrol", fallback=False):            
                 on_button = wx.Button (self, -1, "On")
@@ -93,7 +94,10 @@ class PanelProjector (wx.Panel):
             
         for proj, onoffText, shutterCheck, on_button, off_button, inputCombo in proj_list:
             if proj:
-                proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter)
+                if isinstance(shutter, list):
+                    proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter.pop(0))
+                else:
+                    proj.set_mute(pjlink.MUTE_VIDEO | pjlink.MUTE_AUDIO, shutter)
 
     def GetShutter (self, group = "sides"):
         proj_list = self.projectors
@@ -106,7 +110,7 @@ class PanelProjector (wx.Panel):
             if proj:
                 shutters.append(proj.get_mute())
                 
-        print shutters
+        print (shutters)
         return shutters
                 
     def OnShutter (self, evt):
