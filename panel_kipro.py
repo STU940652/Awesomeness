@@ -450,7 +450,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
         ### Center display is now complete.  Now switch the sides.
         # Get current Kumo side projector source
-        self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ SIDES')
+        self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ L-R')
         print ("self.SideProjectorsKumoSource", self.SideProjectorsKumoSource)
         
         # Get current Side projector inputs
@@ -469,8 +469,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Side Projectors to CGM
-            # TODO: Bad name?
-            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ SIDES', '  5: CG 1 PGM')
+            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', '  5: CG 1 PGM')
         
         time.sleep(4.0)
         
@@ -527,7 +526,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Side Projectors to CGM
             # TODO: Bad name?
-            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ SIDES', self.SideProjectorsKumoSource)
+            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', self.SideProjectorsKumoSource)
         
         time.sleep(4.0)
         

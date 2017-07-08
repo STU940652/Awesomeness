@@ -51,6 +51,10 @@ class kumoManager (kumo.Client):
         if self.online:
             self.destSet[int(destination)] = int(source)
             return self.setParameter('eParamID_XPT_Destination%i_Status' %  int(destination) , str(source))
+            
+    def getChannel (self, destination):
+        if self.online:
+            return self.destSet[int(destination)]
 
 class SaveSettings (wx.Frame):
     def __init__ (self, parent, settings, namesDst, namesSrc):
@@ -251,7 +255,7 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
                  
     def GetChannelByName (self, dst):
         if (dst in self.kumo.namesDst):
-            return self.kumo.namesSrc[self.kumo.setChannel(self.kumo.namesDst.index(dst))]
+            return self.kumo.namesSrc[self.kumo.getChannel(self.kumo.namesDst.index(dst))]
 
         else:
             print ("In GetChannelByName")
