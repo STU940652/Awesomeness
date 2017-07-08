@@ -110,7 +110,6 @@ class PanelProjector (wx.Panel):
             if proj:
                 shutters.append(proj.get_mute())
                 
-        print (shutters)
         return shutters
                 
     def OnShutter (self, evt):
