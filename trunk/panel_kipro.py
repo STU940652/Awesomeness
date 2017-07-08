@@ -465,7 +465,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Side Projectors: Shutter to hide the transition
             self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
             time.sleep(1.0)
-            self.parent.panelProjectors.panelMain.SetInput("DIGITAL 1", "sides")
+            self.parent.panelProjectors.panelMain.SetInput("DIGITAL 2", "sides")
             
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Side Projectors to CGM
