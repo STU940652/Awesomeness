@@ -285,7 +285,6 @@ class PanelKumo (wx.lib.scrolledpanel.ScrolledPanel):
 
     def OnApply (self, evt):   
         for dest in self.destControls:
-            #print (self.destControls[dest]["enableSource"].IsChecked())
             if self.destControls[dest]["enableSource"].IsChecked():
                 self.kumo.setChannel(dest, self.destControls[dest]["nextSource"].GetSelection()+1)
                 

@@ -284,10 +284,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         sizer_h.Add(sizer_v, flag=wx.EXPAND)
 
         sizer_h.AddStretchSpacer(1)
-        
-        self.ScreenMode = wx.RadioBox(self,label = "Screen Mode", choices = ['1-screen', '3-screen'], style=wx.RA_SPECIFY_ROWS)
-        self.ScreenMode.SetSelection( 1)
-        sizer_h.Add(self.ScreenMode)
         panelSizer.Add(sizer_h, border = 5, flag=wx.EXPAND|wx.ALL)
         
         panelSizer.AddStretchSpacer()
@@ -306,7 +302,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if False:
             if self.parent.panelProjectors.MainDisplayed:
                 old = self.parent.panelProjectors.panelMain.GetInput("sides")
-                print (old)
                 self.parent.panelProjectors.panelMain.SetInput("DIGITAL 1", "sides")
                 time.sleep(5)
                 self.parent.panelProjectors.panelMain.SetInput(old, "sides")
@@ -451,15 +446,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         ### Center display is now complete.  Now switch the sides.
         # Get current Kumo side projector source
         self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ L-R')
-        print ("self.SideProjectorsKumoSource", self.SideProjectorsKumoSource)
         
         # Get current Side projector inputs
         self.SideProjectorsInputSource =  self.parent.panelProjectors.panelMain.GetInput("sides")
-        print ("self.SideProjectorsInputSource", self.SideProjectorsInputSource)
          
         # Get current side projectors shutter
         self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.GetShutter("sides")
-        print ("self.SideProjectorsShutters", self.SideProjectorsShutters)
         
         if self.parent.panelProjectors.MainDisplayed:
             # Side Projectors: Shutter to hide the transition
