@@ -391,7 +391,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         at the switcher is for keying, e.g. has no background.  So all the projector
         switching is from the Kumo, while the projectors are shuttered.
         
-        On Show, the center projector is completly transitoned before the sides.  That 
+        On Show, the center projector is completely transitoned before the sides.  That 
         way the audience has something to look at.  
         
         On End, the center is again completly transitioned before the sides.  So there
@@ -417,7 +417,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
         if self.parent.panelKumo.MainDisplayed:
             # Kumo: Set Main Projector to PGM
-            self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', ' 16: SWTCHR PGM')
+            self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  9: KIPRO OUT')
         
         if self.parent.panelHS50.MainDisplayed:
             # Prep Video Switcher.  Set Preview to the correct channel
@@ -428,11 +428,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             
             # Wait for fade to complete
             time.sleep(1)
-                
-        if self.parent.panelProjectors.MainDisplayed:
-            # Main Projector: Unshutter
-            self.parent.panelProjectors.panelMain.SetShutter(False, "main")
-            time.sleep(0.5)
         
         if self.kipro:
             # Start clip
@@ -442,6 +437,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
             self.parent.panelHS50.panelMain.OnCut()
             self.parent.panelHS50.panelMain.OnFTB()
+
+        if self.parent.panelProjectors.MainDisplayed:
+            # Main Projector: Unshutter
+            self.parent.panelProjectors.panelMain.SetShutter(False, "main")
             
         ### Center display is now complete.  Now switch the sides.
         # Get current Kumo side projector source
@@ -479,7 +478,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 self.parent.panelHS50.panelMain.OnFTB()
             
             # Wait for fade to complete.  Cut it a little short
-            time.sleep(0.75)
+            time.sleep(0.5)
         
             if self.parent.panelProjectors.MainDisplayed:
                # Main Projector: Shutter
@@ -488,7 +487,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             if self.parent.panelKumo.MainDisplayed:
                 # Kumo: Main Projector to CGM
                 self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')  
-                # time.sleep(1) # Don't delay here, in case the clip ends.             
         
         # Stop playback
         if self.timecodeUpdateThread:
