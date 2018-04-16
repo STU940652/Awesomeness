@@ -3,7 +3,9 @@ from panel_kumo import PanelKumo
 from panel_kipro import PanelKipro
 from panel_hs50 import PanelHS50
 from panel_projectors import PanelProjector
+import os
 import Settings
+import logging
 
 class PanelManager():    
     def __init__ (self, parent, thisClass, menuCheck, parentSizer, proportion = 1):
@@ -137,11 +139,15 @@ class MainFrame (wx.Frame):
         
 class MyApp(wx.App):
     def OnInit(self):
+        logging.info("##### Preparing Awesomeness #####")
         frame = MainFrame(None, "Awesomeness")
         self.SetTopWindow(frame)
         frame.Show(True)
         return True
-        
+
+logging.basicConfig(filename=os.path.join(Settings.logging_directory,'awesomeness.log'), 
+    level=logging.INFO, 
+    format='%(asctime)s:%(levelname)s:%(message)s')        
 app = MyApp(redirect=False)
 app.MainLoop()
-
+logging.info("##### Ending Awesomeness #####")

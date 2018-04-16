@@ -28,6 +28,7 @@ elif "HOME" in os.environ:
 else:
     data_directory = os.path.realpath(os.path.join('.', "Awesomeness"))
 
+logging_directory = data_directory
 data_directory_list = ['.',  data_directory]
 
 # And read from the ini file

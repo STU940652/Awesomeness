@@ -7,6 +7,7 @@ import Settings
 import os
 import os.path
 import collections
+import logging
 
 from AJArest import kipro
 
@@ -274,6 +275,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.Bind(wx.EVT_BUTTON, self.OnCueClip, self.cueClipButton)
         sizer.Add(self.cueClipButton)
         self.showClipButton = wx.Button (self, -1, "Show Clip")
+        self.showClipButton.Enable(False)
         self.Bind(wx.EVT_BUTTON, self.OnShowClip, self.showClipButton)
         sizer.Add(self.showClipButton)
         self.cancelClipButton = wx.Button (self, -1, "Cancel Clip")
@@ -368,6 +370,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         self.stopTimeText.SetValue(stop.strip())
         
     def OnCueClip (self, evt=None):
+        logging.info("KiPro OnCueClip: %s", str(evt))
+        if evt: self.showClipButton.Enable(True)
         if self.kipro:
             self.kipro.cueToTimecode(self.startTimeText.GetValue())
              
@@ -397,7 +401,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         On End, the center is again completly transitioned before the sides.  So there
         will be a bit of time where all three screens show CGM-Main.
         """
-        
+        logging.info("KiPro OnShowClip: %s", str(evt))
+        self.showClipButton.Enable(False)
         self.ShowingClip = True
         self.timeslider.Disable()
         self.startTimeText.Disable()
@@ -472,6 +477,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         """
         This is the 3-screen version of End Clip
         """
+        logging.info("KiPro OnEndClip: %s", str(evt))
         if self.ShowingClip:
             if self.parent.panelHS50.MainDisplayed:
                 # Video Switcher: Fade-to-black
@@ -553,16 +559,19 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.timecodeUpdateThread.setStopTime(None)
             
     def OnCueStart (self, evt=None):
+        logging.info("KiPro OnCueStart: %s", str(evt))
         if self.kipro:
             self.kipro.cueToTimecode(self.startTimeText.GetValue())
 
     def OnPlayFrom (self, evt):
+        logging.info("KiPro OnPlayFrom: %s", str(evt))
         self.OnCueStart()
         time.sleep(0.1)
         if self.kipro:
             self.kipro.play()
             
     def OnPlayTo (self, evt):
+        logging.info("KiPro OnPlayTo: %s", str(evt))
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
         if self.kipro:
