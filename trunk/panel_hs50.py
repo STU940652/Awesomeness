@@ -6,6 +6,8 @@ import re
 import time
 import collections
 import Settings
+import logging
+import inspect
 
 PORT = 60040            # Standard prot for HS50
 
@@ -113,18 +115,21 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         c = STX + b"SCUT:00" + ETX
         if self.socket:
             self.socket.sendall(c)
+            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
         time.sleep(0.05)
         
     def OnFade (self, evt=None):
         c = STX + b"SAUT:00:0" + ETX
         if self.socket:
             self.socket.sendall(c)
+            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
         time.sleep(0.05)
         
     def OnFTB (self, evt=None):
         c = STX + b"SAUT:06:0" + ETX
         if self.socket:
             self.socket.sendall(c)
+            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
         time.sleep(0.05)
         
     def OnChangeOutput (self, evt):
@@ -140,7 +145,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         c = STX + b"SBUS:" + bus + b":" + self.inputList[evt.GetEventObject().GetSelection()] + ETX
         if self.socket:
             self.socket.sendall(c)
-        # print (c)
+            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
         time.sleep(0.05)
         
     def ChangeOutput (self, channel, selection):
@@ -159,7 +164,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         c = STX + b"SBUS:" + bus + b":" + self.inputList[control.FindString(selection)] + ETX
         if self.socket:
             self.socket.sendall(c)
-        # print (c)
+            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
         time.sleep(0.05)
         
     def OnDestroy (self, evt):
