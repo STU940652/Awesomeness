@@ -6,6 +6,7 @@ from panel_projectors import PanelProjector
 import os
 import Settings
 import logging
+import sys
 
 class PanelManager():    
     def __init__ (self, parent, thisClass, menuCheck, parentSizer, proportion = 1):
@@ -145,9 +146,20 @@ class MyApp(wx.App):
         frame.Show(True)
         return True
 
-logging.basicConfig(filename=os.path.join(Settings.logging_directory,'awesomeness.log'), 
-    level=logging.INFO, 
-    format='%(asctime)s:%(levelname)s:%(message)s')        
-app = MyApp(redirect=False)
-app.MainLoop()
-logging.info("##### Ending Awesomeness #####")
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+if __name__ == "__main__":       
+    logging.basicConfig(filename=os.path.join(Settings.logging_directory,'awesomeness.log'), 
+        level=logging.INFO, 
+        format='%(asctime)s:%(levelname)s:%(message)s')  
+
+    sys.excepthook = handle_exception
+        
+    app = MyApp(redirect=False)
+    app.MainLoop()
+    logging.info("##### Ending Awesomeness #####")
