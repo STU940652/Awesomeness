@@ -93,6 +93,10 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         self.Bind(wx.EVT_BUTTON, self.OnFTB, self.ftbButton)
         sizer.Add(self.ftbButton)
         sizer.AddStretchSpacer(1)
+        self.keyButton = wx.Button (self, -1, "Key")
+        self.Bind(wx.EVT_BUTTON, self.OnKey, self.keyButton)
+        sizer.Add(self.keyButton)
+        sizer.AddStretchSpacer(1)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND)
         
         panelSizer.AddStretchSpacer()
@@ -127,6 +131,13 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         
     def OnFTB (self, evt=None):
         c = STX + b"SAUT:06:0" + ETX
+        if self.socket:
+            self.socket.sendall(c)
+            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
+        time.sleep(0.05)
+        
+    def OnKey (self, evt=None):
+        c = STX + b"SAUT:01:0" + ETX
         if self.socket:
             self.socket.sendall(c)
             logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
