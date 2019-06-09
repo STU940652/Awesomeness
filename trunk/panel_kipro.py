@@ -22,6 +22,7 @@ def frames_to_timecode (frames, fps, hms_only = False):
     msl = msl - m*60*fps
     s = int(msl/fps)
     f = round(msl-s*fps)
+    if h > 24: h -= 24
     if hms_only:
         return "%02i:%02i:%02i" % (h,m,s)
     return "%02i:%02i:%02i:%02i" % (h,m,s,f)
@@ -448,30 +449,31 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.parent.panelProjectors.panelMain.SetShutter(False, "main")
             
         ### Center display is now complete.  Now switch the sides.
-        # Get current Kumo side projector source
-        self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ L-R')
-        
-        # Get current Side projector inputs
-        self.SideProjectorsInputSource =  self.parent.panelProjectors.panelMain.GetInput("sides")
-         
-        # Get current side projectors shutter
-        self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.GetShutter("sides")
-        
-        if self.parent.panelProjectors.MainDisplayed:
-            # Side Projectors: Shutter to hide the transition
-            self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
-            time.sleep(1.0)
-            self.parent.panelProjectors.panelMain.SetInput("DIGITAL 2", "sides")
+        if False:
+            # Get current Kumo side projector source
+            self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ L-R')
             
-        if self.parent.panelKumo.MainDisplayed:
-            # Kumo: Set Side Projectors to CGM
-            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', '  5: CG 1 PGM')
-        
-        time.sleep(4.0)
-        
-        if self.parent.panelProjectors.MainDisplayed:
-            # Side Projectors: Un-shutter
-            self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
+            # Get current Side projector inputs
+            self.SideProjectorsInputSource =  self.parent.panelProjectors.panelMain.GetInput("sides")
+             
+            # Get current side projectors shutter
+            self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.GetShutter("sides")
+            
+            if self.parent.panelProjectors.MainDisplayed:
+                # Side Projectors: Shutter to hide the transition
+                self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
+                time.sleep(1.0)
+                self.parent.panelProjectors.panelMain.SetInput("DIGITAL 2", "sides")
+                
+            if self.parent.panelKumo.MainDisplayed:
+                # Kumo: Set Side Projectors to CGM
+                self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', '  5: CG 1 PGM')
+            
+            time.sleep(4.0)
+            
+            if self.parent.panelProjectors.MainDisplayed:
+                # Side Projectors: Un-shutter
+                self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
             
     def OnEndClip (self, evt=None):
         """
@@ -513,22 +515,23 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 self.parent.panelProjectors.panelMain.SetShutter(False, "main")
                 
         ### Center display is now complete.  Now switch the sides.
-        if self.parent.panelProjectors.MainDisplayed:
-            # Side Projectors: Shutter to hide the transition
-            self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
-            time.sleep(1.0)
-            self.parent.panelProjectors.panelMain.SetInput(self.SideProjectorsInputSource, "sides")
+        if False:
+            if self.parent.panelProjectors.MainDisplayed:
+                # Side Projectors: Shutter to hide the transition
+                self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
+                time.sleep(1.0)
+                self.parent.panelProjectors.panelMain.SetInput(self.SideProjectorsInputSource, "sides")
+                
+            if self.parent.panelKumo.MainDisplayed:
+                # Kumo: Set Side Projectors to CGM
+                # TODO: Bad name?
+                self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', self.SideProjectorsKumoSource)
             
-        if self.parent.panelKumo.MainDisplayed:
-            # Kumo: Set Side Projectors to CGM
-            # TODO: Bad name?
-            self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', self.SideProjectorsKumoSource)
-        
-        time.sleep(4.0)
-        
-        if self.parent.panelProjectors.MainDisplayed:
-            # Side Projectors: Un-shutter (Legacy, just in case)
-            self.parent.panelProjectors.panelMain.SetShutter(False, "sides") # TODO" self.SideProjectorsShutters
+            time.sleep(4.0)
+            
+            if self.parent.panelProjectors.MainDisplayed:
+                # Side Projectors: Un-shutter (Legacy, just in case)
+                self.parent.panelProjectors.panelMain.SetShutter(False, "sides") # TODO" self.SideProjectorsShutters
 
         self.ShowingClip = False
         self.timeslider.Enable()
@@ -642,6 +645,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 # Transport must be stopped
                 timecode_frames = starting_frames           
         
+        if (timecode_frames - starting_frames) < 0:
+            timecode_frames += timecode_to_frames("24:00:00:00", fps)
         # See if we can move the slider
         if self.sliderMask:
             self.sliderMask -= 1
