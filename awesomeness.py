@@ -153,7 +153,9 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
     logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 
-if __name__ == "__main__":       
+if __name__ == "__main__":
+    if not os.path.isdir(Settings.logging_directory):
+        os.makedirs(Settings.logging_directory)
     logging.basicConfig(filename=os.path.join(Settings.logging_directory,'awesomeness.log'), 
         level=logging.INFO, 
         format='%(asctime)s:%(levelname)s:%(message)s')  

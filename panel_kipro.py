@@ -287,6 +287,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         sizer_h.Add(sizer_v, flag=wx.EXPAND)
 
         sizer_h.AddStretchSpacer(1)
+        self.ScreenMode = wx.RadioBox(self,label = "Screen Mode", choices = ['1-screen', '3-screen'], style=wx.RA_SPECIFY_ROWS)
+        self.ScreenMode.SetSelection( 1)
+        sizer_h.Add(self.ScreenMode)
+
         panelSizer.Add(sizer_h, border = 5, flag=wx.EXPAND|wx.ALL)
         
         panelSizer.AddStretchSpacer()
@@ -449,7 +453,8 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.parent.panelProjectors.panelMain.SetShutter(False, "main")
             
         ### Center display is now complete.  Now switch the sides.
-        if False:
+        self.ScreenMode.Disable()
+        if self.ScreenMode.GetSelection() == 1:
             # Get current Kumo side projector source
             self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ L-R')
             
@@ -500,7 +505,14 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(None)
         if self.kipro:
-            self.kipro.stop()
+            # See if we should block the command
+            if self.StopLock.GetValue():
+                if self.StaleState:
+                    # Update Transport State if there is a command in flight
+                    self.OnTimer(None)
+                if self.currentStateText.GetValue() != "Paused":
+                    # Transport is not paused.  Ok to stop
+                    self.kipro.stop()
             
         if self.ShowingClip:
             if self.parent.panelHS50.MainDisplayed:            
@@ -515,7 +527,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 self.parent.panelProjectors.panelMain.SetShutter(False, "main")
                 
         ### Center display is now complete.  Now switch the sides.
-        if False:
+        if self.ScreenMode.GetSelection() == 1:
             if self.parent.panelProjectors.MainDisplayed:
                 # Side Projectors: Shutter to hide the transition
                 self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
@@ -523,15 +535,15 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                 self.parent.panelProjectors.panelMain.SetInput(self.SideProjectorsInputSource, "sides")
                 
             if self.parent.panelKumo.MainDisplayed:
-                # Kumo: Set Side Projectors to CGM
-                # TODO: Bad name?
+                # Kumo: Set Side Projectors to previous source
                 self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', self.SideProjectorsKumoSource)
             
             time.sleep(4.0)
             
             if self.parent.panelProjectors.MainDisplayed:
                 # Side Projectors: Un-shutter (Legacy, just in case)
-                self.parent.panelProjectors.panelMain.SetShutter(False, "sides") # TODO" self.SideProjectorsShutters
+                self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
+        self.ScreenMode.Enable()
 
         self.ShowingClip = False
         self.timeslider.Enable()
