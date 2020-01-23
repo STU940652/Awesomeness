@@ -9,7 +9,7 @@ import Settings
 import logging
 import inspect
 
-PORT = 60040            # Standard prot for HS50
+PORT = 60040            # Standard prot for ATEM
 
 STX = b'\x02'
 ETX = b'\x03'
@@ -25,7 +25,7 @@ class ButtonWithData (wx.Button):
         return self.Data
         
 
-class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
+class PanelATEM (wx.lib.scrolledpanel.ScrolledPanel):
 
     online = False
     socket = None
@@ -38,7 +38,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         self.requestList=collections.deque([b"12", b"02", b"03"])
         
         # Init the connection
-        host = Settings.Config.get("HS50","ip")
+        host = Settings.Config.get("ATEM","ip")
         if len(host):
             try:
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -53,16 +53,16 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         # Get Channel List
         ChannelNames = ["Black","1","2","3","4","5","FMEM1","FMEM2","PGM"]
         for i in range(len(ChannelNames)):
-            n = Settings.Config.get("HS50","ChannelName%i" % i, fallback = "")
+            n = Settings.Config.get("ATEM","ChannelName%i" % i, fallback = "")
             if len(n):
                 ChannelNames[i] = n
             
                     
         panelSizer = wx.BoxSizer(wx.VERTICAL)
         if self.online:
-            self.infoBar = wx.StaticText(self, -1, "Video Switcher: Connected to HS50")
+            self.infoBar = wx.StaticText(self, -1, "Video Switcher: Connected to ATEM")
         else:
-            self.infoBar = wx.StaticText(self, -1, "Video Switcher: HS50 Offline")
+            self.infoBar = wx.StaticText(self, -1, "Video Switcher: ATEM Offline")
         panelSizer.Add(self.infoBar)
         
         # Program Output
@@ -104,7 +104,7 @@ class PanelHS50 (wx.lib.scrolledpanel.ScrolledPanel):
         self.Layout()
         #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)
         
-        # Start a timer to get latest setting from HS50
+        # Start a timer to get latest setting from ATEM
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
         self.timer.Start(0.2e+3) # 0.2 second interval

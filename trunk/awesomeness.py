@@ -1,7 +1,7 @@
 import wx
 from panel_kumo import PanelKumo
 from panel_kipro import PanelKipro
-from panel_hs50 import PanelHS50
+from panel_atem import PanelATEM
 from panel_projectors import PanelProjector
 import os
 import Settings
@@ -85,9 +85,9 @@ class MainFrame (wx.Frame):
         self.menuKumo = menu.AppendCheckItem(wx.ID_ANY, "Kumo", "Enable Kumo Panel")
         self.menuKumo.Check(Settings.Config.getboolean("Kumo", "show", fallback=True))
         self.Bind(wx.EVT_MENU, self.OnKumoMenuCheck, self.menuKumo)
-        self.menuHS50 = menu.AppendCheckItem(wx.ID_ANY, "HS50", "Enable HS50 Panel")
-        self.menuHS50.Check(Settings.Config.getboolean("HS50", "show", fallback=True))
-        self.Bind(wx.EVT_MENU, self.OnHS50MenuCheck, self.menuHS50)
+        self.menuATEM = menu.AppendCheckItem(wx.ID_ANY, "ATEM", "Enable ATEM Panel")
+        self.menuATEM.Check(Settings.Config.getboolean("ATEM", "show", fallback=True))
+        self.Bind(wx.EVT_MENU, self.OnATEMMenuCheck, self.menuATEM)
         self.menuProj = menu.AppendCheckItem(wx.ID_ANY, "Projectors", "Enable Projector Panel")
         self.menuProj.Check(Settings.Config.getboolean("projector", "show", fallback=True))
         self.Bind(wx.EVT_MENU, self.OnProjMenuCheck, self.menuProj)
@@ -106,7 +106,7 @@ class MainFrame (wx.Frame):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.panelKumo = PanelManager (self, PanelKumo, self.menuKumo, sizer) #sizer.Add(self.panelKumo, 1, wx.EXPAND)
         sizer2 = wx.BoxSizer(wx.VERTICAL)
-        self.panelHS50 = PanelManager (self, PanelHS50, self.menuHS50, sizer2) #sizer2.Add(self.panelHS50, 1, wx.EXPAND)
+        self.panelATEM = PanelManager (self, PanelATEM, self.menuATEM, sizer2) #sizer2.Add(self.panelATEM, 1, wx.EXPAND)
         self.panelProjectors = PanelManager (self, PanelProjector, self.menuProj, sizer2, 0) #sizer2.Add(self.panelProjectors, 0, wx.EXPAND)
         self.panelKiPro = PanelManager (self, PanelKipro, self.menuKiPro, sizer2) #sizer2.Add(self.panelKipro, 1, wx.EXPAND)
         sizer.Add(sizer2, 1, wx.EXPAND)
@@ -114,15 +114,15 @@ class MainFrame (wx.Frame):
         self.Fit()
         
         self.panelKumo.SetupScrolling(self)
-        self.panelHS50.SetupScrolling(self)
+        self.panelATEM.SetupScrolling(self)
         #self.panelProjectors.SetupScrolling(self)
         self.panelKiPro.SetupScrolling(self)
     
     def OnKumoMenuCheck (self, evt):
         self.panelKumo.OnMenuCheck()
         
-    def OnHS50MenuCheck (self, evt):
-        self.panelHS50.OnMenuCheck()
+    def OnATEMMenuCheck (self, evt):
+        self.panelATEM.OnMenuCheck()
 
     def OnProjMenuCheck (self, evt):
         self.panelProjectors.OnMenuCheck()
@@ -132,7 +132,7 @@ class MainFrame (wx.Frame):
         
     def OnViewSave (self, evt):
         Settings.Config.set("Kumo", "show", str(self.menuKumo.IsChecked()))
-        Settings.Config.set("HS50", "show", str(self.menuHS50.IsChecked()))
+        Settings.Config.set("ATEM", "show", str(self.menuATEM.IsChecked()))
         Settings.Config.set("projector", "show", str(self.menuProj.IsChecked()))
         Settings.Config.set("KiPro", "show", str(self.menuKiPro.IsChecked()))
         Settings.write()

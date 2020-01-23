@@ -78,7 +78,7 @@ class PanelProjector (wx.Panel):
         self.SetSizer(panelSizer)
         self.Layout()
         
-        # Start a timer to get latest setting from HS50
+        # Start a timer to get latest setting from ATEM
         self.OnTimer(None)
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
