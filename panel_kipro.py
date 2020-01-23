@@ -384,7 +384,7 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         """
         This is the 3-screen version of Show Clip
         
-        The side screens are sourced from the HS50 Aux output.  The center is directly
+        The side screens are sourced from the ATEM Aux output.  The center is directly
         from the Kumo.
         """
         
@@ -393,10 +393,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         beginning.  Need to store:
             X 1) Center projector source (from Kumo)
             2) Side projector source (from Kumo)
-            3) Side projector input (from HS50)
+            3) Side projector input (from ATEM)
             4) Side projector shutter/un-shutter
         
-        We are no longer using the Aux output of the HS50.  This is becasue CGM
+        We are no longer using the Aux output of the ATEM.  This is becasue CGM
         at the switcher is for keying, e.g. has no background.  So all the projector
         switching is from the Kumo, while the projectors are shuttered.
         
@@ -429,12 +429,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Kumo: Set Main Projector to PGM
             self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  9: KIPRO OUT')
         
-        if self.parent.panelHS50.MainDisplayed:
+        if self.parent.panelATEM.MainDisplayed:
             # Prep Video Switcher.  Set Preview to the correct channel
-            self.parent.panelHS50.panelMain.ChangeOutput('PVW', Settings.Config.get("HS50","KiProChannel"))
+            self.parent.panelATEM.panelMain.ChangeOutput('PVW', Settings.Config.get("ATEM","KiProChannel"))
         
             # Video Switcher PGM Fade-to-Black
-            self.parent.panelHS50.panelMain.OnFTB()
+            self.parent.panelATEM.panelMain.OnFTB()
             
             # Wait for fade to complete
             time.sleep(1)
@@ -443,10 +443,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             # Start clip
             self.kipro.play()
             
-        if self.parent.panelHS50.MainDisplayed:
+        if self.parent.panelATEM.MainDisplayed:
             # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-            self.parent.panelHS50.panelMain.OnCut()
-            self.parent.panelHS50.panelMain.OnFTB()
+            self.parent.panelATEM.panelMain.OnCut()
+            self.parent.panelATEM.panelMain.OnFTB()
 
         if self.parent.panelProjectors.MainDisplayed:
             # Main Projector: Unshutter
@@ -486,9 +486,9 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         """
         logging.info("KiPro OnEndClip: %s", str(evt))
         if self.ShowingClip:
-            if self.parent.panelHS50.MainDisplayed:
+            if self.parent.panelATEM.MainDisplayed:
                 # Video Switcher: Fade-to-black
-                self.parent.panelHS50.panelMain.OnFTB()
+                self.parent.panelATEM.panelMain.OnFTB()
             
             # Wait for fade to complete.  Cut it a little short
             time.sleep(0.5)
@@ -515,10 +515,10 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                     self.kipro.stop()
             
         if self.ShowingClip:
-            if self.parent.panelHS50.MainDisplayed:            
+            if self.parent.panelATEM.MainDisplayed:            
                 # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-                self.parent.panelHS50.panelMain.OnCut()
-                self.parent.panelHS50.panelMain.OnFTB()
+                self.parent.panelATEM.panelMain.OnCut()
+                self.parent.panelATEM.panelMain.OnFTB()
             
             if self.parent.panelProjectors.MainDisplayed:
                 # Main Projector: Un-Shutter

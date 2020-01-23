@@ -11,9 +11,9 @@ Config.set('Kumo', 'ip', '')
 Config.add_section('KiPro')
 Config.set('KiPro', 'ip', '')
 
-Config.add_section('HS50')
-Config.set('HS50', 'ip', '')
-Config.set('HS50', 'KiProChannel', '3')
+Config.add_section('ATEM')
+Config.set('ATEM', 'ip', '')
+Config.set('ATEM', 'KiProChannel', '3')
 
 Config.add_section('projector')
 Config.set('projector', 'ip', '')
