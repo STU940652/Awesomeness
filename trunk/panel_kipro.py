@@ -287,9 +287,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         sizer_h.Add(sizer_v, flag=wx.EXPAND)
 
         sizer_h.AddStretchSpacer(1)
-        self.ScreenMode = wx.RadioBox(self,label = "Screen Mode", choices = ['1-screen', '3-screen'], style=wx.RA_SPECIFY_ROWS)
-        self.ScreenMode.SetSelection( 1)
-        sizer_h.Add(self.ScreenMode)
 
         panelSizer.Add(sizer_h, border = 5, flag=wx.EXPAND|wx.ALL)
         
@@ -381,31 +378,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
             self.kipro.cueToTimecode(self.startTimeText.GetValue())
              
     def OnShowClip (self, evt):
-        """
-        This is the 3-screen version of Show Clip
-        
-        The side screens are sourced from the ATEM Aux output.  The center is directly
-        from the Kumo.
-        """
-        
-        """
-        Converting to a single path.  Make no assumptions as the state at the
-        beginning.  Need to store:
-            X 1) Center projector source (from Kumo)
-            2) Side projector source (from Kumo)
-            3) Side projector input (from ATEM)
-            4) Side projector shutter/un-shutter
-        
-        We are no longer using the Aux output of the ATEM.  This is becasue CGM
-        at the switcher is for keying, e.g. has no background.  So all the projector
-        switching is from the Kumo, while the projectors are shuttered.
-        
-        On Show, the center projector is completely transitoned before the sides.  That 
-        way the audience has something to look at.  
-        
-        On End, the center is again completly transitioned before the sides.  So there
-        will be a bit of time where all three screens show CGM-Main.
-        """
         logging.info("KiPro OnShowClip: %s", str(evt))
         self.showClipButton.Enable(False)
         self.ShowingClip = True
@@ -417,69 +389,15 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         time.sleep(0.2)
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(self.stopTimeText.GetValue())
-            
-        if self.parent.panelProjectors.MainDisplayed:
-            # Main Projector: Shutter
-            # The projector appears to require some delay between shuttering an unshuttering.
-            # So we shutter early
-            self.parent.panelProjectors.panelMain.SetShutter(True, "main")
-            #time.sleep(1) # May need to adjust this
-            
-        if self.parent.panelKumo.MainDisplayed:
-            # Kumo: Set Main Projector to PGM
-            self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  9: KIPRO OUT')
-        
+                    
         if self.parent.panelATEM.MainDisplayed:
-            # Prep Video Switcher.  Set Preview to the correct channel
-            self.parent.panelATEM.panelMain.ChangeOutput('PVW', Settings.Config.get("ATEM","KiProChannel"))
-        
-            # Video Switcher PGM Fade-to-Black
-            self.parent.panelATEM.panelMain.OnFTB()
-            
-            # Wait for fade to complete
-            time.sleep(1)
+            # Video Switcher Start Macro
+            self.parent.panelATEM.panelMain.OnStart()
         
         if self.kipro:
             # Start clip
             self.kipro.play()
-            
-        if self.parent.panelATEM.MainDisplayed:
-            # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-            self.parent.panelATEM.panelMain.OnCut()
-            self.parent.panelATEM.panelMain.OnFTB()
-
-        if self.parent.panelProjectors.MainDisplayed:
-            # Main Projector: Unshutter
-            self.parent.panelProjectors.panelMain.SetShutter(False, "main")
-            
-        ### Center display is now complete.  Now switch the sides.
-        self.ScreenMode.Disable()
-        if self.ScreenMode.GetSelection() == 1:
-            # Get current Kumo side projector source
-            self.SideProjectorsKumoSource =  self.parent.panelKumo.panelMain.GetChannelByName(' 15: PROJ L-R')
-            
-            # Get current Side projector inputs
-            self.SideProjectorsInputSource =  self.parent.panelProjectors.panelMain.GetInput("sides")
-             
-            # Get current side projectors shutter
-            self.SideProjectorsShutters = self.parent.panelProjectors.panelMain.GetShutter("sides")
-            
-            if self.parent.panelProjectors.MainDisplayed:
-                # Side Projectors: Shutter to hide the transition
-                self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
-                time.sleep(1.0)
-                self.parent.panelProjectors.panelMain.SetInput("DIGITAL 2", "sides")
-                
-            if self.parent.panelKumo.MainDisplayed:
-                # Kumo: Set Side Projectors to CGM
-                self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', '  5: CG 1 PGM')
-            
-            time.sleep(4.0)
-            
-            if self.parent.panelProjectors.MainDisplayed:
-                # Side Projectors: Un-shutter
-                self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
-            
+                        
     def OnEndClip (self, evt=None):
         """
         This is the 3-screen version of End Clip
@@ -487,20 +405,12 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
         logging.info("KiPro OnEndClip: %s", str(evt))
         if self.ShowingClip:
             if self.parent.panelATEM.MainDisplayed:
-                # Video Switcher: Fade-to-black
-                self.parent.panelATEM.panelMain.OnFTB()
+                # Video Switcher End Macro
+                self.parent.panelATEM.panelMain.OnEnd()
             
             # Wait for fade to complete.  Cut it a little short
             time.sleep(0.5)
-        
-            if self.parent.panelProjectors.MainDisplayed:
-               # Main Projector: Shutter
-               self.parent.panelProjectors.panelMain.SetShutter(True, "main")
                 
-            if self.parent.panelKumo.MainDisplayed:
-                # Kumo: Main Projector to CGM
-                self.parent.panelKumo.panelMain.SetChannelByName(' 14: PROJ CNTR', '  5: CG 1 PGM')  
-        
         # Stop playback
         if self.timecodeUpdateThread:
             self.timecodeUpdateThread.setStopTime(None)
@@ -514,37 +424,6 @@ class PanelKipro (wx.lib.scrolledpanel.ScrolledPanel):
                     # Transport is not paused.  Ok to stop
                     self.kipro.stop()
             
-        if self.ShowingClip:
-            if self.parent.panelATEM.MainDisplayed:            
-                # Video Switcher: Swap PGM/PVW and Un-Fade-to-Black
-                self.parent.panelATEM.panelMain.OnCut()
-                self.parent.panelATEM.panelMain.OnFTB()
-            
-            if self.parent.panelProjectors.MainDisplayed:
-                # Main Projector: Un-Shutter
-                # The projector appears to require some delay between shuttering an unshuttering.
-                time.sleep(2) # May need to adjust this
-                self.parent.panelProjectors.panelMain.SetShutter(False, "main")
-                
-        ### Center display is now complete.  Now switch the sides.
-        if self.ScreenMode.GetSelection() == 1:
-            if self.parent.panelProjectors.MainDisplayed:
-                # Side Projectors: Shutter to hide the transition
-                self.parent.panelProjectors.panelMain.SetShutter(True, "sides")
-                time.sleep(1.0)
-                self.parent.panelProjectors.panelMain.SetInput(self.SideProjectorsInputSource, "sides")
-                
-            if self.parent.panelKumo.MainDisplayed:
-                # Kumo: Set Side Projectors to previous source
-                self.parent.panelKumo.panelMain.SetChannelByName(' 15: PROJ L-R', self.SideProjectorsKumoSource)
-            
-            time.sleep(4.0)
-            
-            if self.parent.panelProjectors.MainDisplayed:
-                # Side Projectors: Un-shutter (Legacy, just in case)
-                self.parent.panelProjectors.panelMain.SetShutter(False, "sides")
-        self.ScreenMode.Enable()
-
         self.ShowingClip = False
         self.timeslider.Enable()
         self.startTimeText.Enable()
