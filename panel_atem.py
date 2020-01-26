@@ -1,225 +1,71 @@
 import wx
 import wx.lib.scrolledpanel 
-import socket
-import traceback
-import re
-import time
-import collections
 import Settings
-import logging
-import inspect
-
-PORT = 60040            # Standard prot for ATEM
-
-STX = b'\x02'
-ETX = b'\x03'
-
-
-class ButtonWithData (wx.Button):
-    Data = None
-    
-    def SetData (self, data):
-        self.Data = data
-        
-    def GetData (self):
-        return self.Data
-        
+import subprocess
 
 class PanelATEM (wx.lib.scrolledpanel.ScrolledPanel):
-
-    online = False
-    socket = None
-    inputList=[b"72", b"50", b"51", b"52", b"53", b"54", b"73", b"74", b"77"]
 
     def __init__(self, parent):
         wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1, style = wx.BORDER_SIMPLE)
 
-        #Some variables
-        self.requestList=collections.deque([b"12", b"02", b"03"])
-        
-        # Init the connection
-        host = Settings.Config.get("ATEM","ip")
-        if len(host):
-            try:
-                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.connect((host, PORT))
-                self.socket.setblocking(False)
-                self.online=True
-            except:
-                traceback.print_exc()
-                self.socket = None
-                self.online=False
-                
-        # Get Channel List
-        ChannelNames = ["Black","1","2","3","4","5","FMEM1","FMEM2","PGM"]
-        for i in range(len(ChannelNames)):
-            n = Settings.Config.get("ATEM","ChannelName%i" % i, fallback = "")
-            if len(n):
-                ChannelNames[i] = n
-            
-                    
         panelSizer = wx.BoxSizer(wx.VERTICAL)
-        if self.online:
-            self.infoBar = wx.StaticText(self, -1, "Video Switcher: Connected to ATEM")
-        else:
-            self.infoBar = wx.StaticText(self, -1, "Video Switcher: ATEM Offline")
+        self.infoBar = wx.StaticText(self, -1, "Video Switcher")
         panelSizer.Add(self.infoBar)
-        
-        # Program Output
-        self.AUX_radio = wx.RadioBox(self,label = "AUX: Auxilliary", choices = ChannelNames)
-        self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.AUX_radio)
-        panelSizer.Add(self.AUX_radio, border = 5, flag=wx.EXPAND|wx.ALL)       
-        
-        self.PGM_radio = wx.RadioBox(self,label = "PGM: Program", choices = ChannelNames[:8])
-        self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PGM_radio)
-        panelSizer.Add(self.PGM_radio, border = 5, flag=wx.EXPAND|wx.ALL)
-
-        self.PVW_radio = wx.RadioBox(self,label = "PVW: Preview", choices = ChannelNames[:8])
-        self.Bind(wx.EVT_RADIOBOX, self.OnChangeOutput, self.PVW_radio)
-        panelSizer.Add(self.PVW_radio, border = 5, flag=wx.EXPAND|wx.ALL)
-
         
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddStretchSpacer(1)
-        self.cutButton = wx.Button (self, -1, "Cut")
-        self.Bind(wx.EVT_BUTTON, self.OnCut, self.cutButton)
-        sizer.Add(self.cutButton)
+        self.startButton = wx.Button (self, -1, "Start Macro")
+        self.Bind(wx.EVT_BUTTON, self.OnStart, self.startButton)
+        sizer.Add(self.startButton)
         sizer.AddStretchSpacer(1)
-        self.fadeButton = wx.Button (self, -1, "Auto Fade")
-        self.Bind(wx.EVT_BUTTON, self.OnFade, self.fadeButton)
-        sizer.Add(self.fadeButton)
-        sizer.AddStretchSpacer(1)
-        self.ftbButton = wx.Button (self, -1, "Fade to Black")
-        self.Bind(wx.EVT_BUTTON, self.OnFTB, self.ftbButton)
-        sizer.Add(self.ftbButton)
-        sizer.AddStretchSpacer(1)
-        self.keyButton = wx.Button (self, -1, "Key")
-        self.Bind(wx.EVT_BUTTON, self.OnKey, self.keyButton)
-        sizer.Add(self.keyButton)
+        self.endButton = wx.Button (self, -1, "End Macro")
+        self.Bind(wx.EVT_BUTTON, self.OnEnd, self.endButton)
+        sizer.Add(self.endButton)
         sizer.AddStretchSpacer(1)
         panelSizer.Add(sizer, border = 5, flag=wx.EXPAND)
         
         panelSizer.AddStretchSpacer()
         self.SetSizer(panelSizer)
         self.Layout()
-        #wx.lib.scrolledpanel.ScrolledPanel.SetupScrolling(self)
-        
-        # Start a timer to get latest setting from ATEM
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(0.2e+3) # 0.2 second interval
-        
+                
         self.Bind(wx.EVT_WINDOW_DESTROY, self.OnDestroy)
         
         self.Fit()
         s = self.Sizer.ComputeFittingWindowSize(self)
         self.SetMaxSize((-1,s[1]))
+        
+        self.command_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnCleanup, self.command_timer)
+        
+        self.command_subprocess = None
 
-    def OnCut (self, evt=None):
-        c = STX + b"SCUT:00" + ETX
-        if self.socket:
-            self.socket.sendall(c)
-            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
-        time.sleep(0.05)
+    def OnStart (self, evt=None):
+        self.OnCleanup()
+        print("Start")
+        self.command_subprocess = subprocess.Popen(args=Settings.Config['ATEM']['StartCommand'])
+        self.command_timer.StartOnce(5000)
         
-    def OnFade (self, evt=None):
-        c = STX + b"SAUT:00:0" + ETX
-        if self.socket:
-            self.socket.sendall(c)
-            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
-        time.sleep(0.05)
+    def OnEnd (self, evt=None):
+        self.OnCleanup()
+        print("End")
+        self.command_subprocess = subprocess.Popen(args=Settings.Config['ATEM']['EndCommand'])
+        self.command_timer.StartOnce(5000)
         
-    def OnFTB (self, evt=None):
-        c = STX + b"SAUT:06:0" + ETX
-        if self.socket:
-            self.socket.sendall(c)
-            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
-        time.sleep(0.05)
-        
-    def OnKey (self, evt=None):
-        c = STX + b"SAUT:01:0" + ETX
-        if self.socket:
-            self.socket.sendall(c)
-            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
-        time.sleep(0.05)
-        
-    def OnChangeOutput (self, evt):
-        if evt.GetEventObject() == self.AUX_radio:
-            bus = b"12"
-        elif evt.GetEventObject() == self.PGM_radio:
-            bus = b"02"
-        elif evt.GetEventObject() == self.PVW_radio:
-            bus = b"03"
-        else:
+    def OnCleanup (self, evt=None):
+        # Called 5 seconds after OnStart/OnEnd to make sure the subprocess doesn't stall
+        print ("Cleanup")
+        if self.command_subprocess == None:
             return
-                    
-        c = STX + b"SBUS:" + bus + b":" + self.inputList[evt.GetEventObject().GetSelection()] + ETX
-        if self.socket:
-            self.socket.sendall(c)
-            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
-        time.sleep(0.05)
-        
-    def ChangeOutput (self, channel, selection):
-        if channel == "AUX":
-            control = self.AUX_radio
-            bus = b"12"
-        elif channel == "PGM":
-            control = self.PGM_radio
-            bus = b"02"
-        elif channel == "PVW":
-            control = self.PVW_radio
-            bus = b"03"
-        else:
-            return
-                    
-        c = STX + b"SBUS:" + bus + b":" + self.inputList[control.FindString(selection)] + ETX
-        if self.socket:
-            self.socket.sendall(c)
-            logging.info("%s:%s", inspect.currentframe().f_code.co_name, c.decode('utf-8', errors='ignore'))
-        time.sleep(0.05)
-        
+            
+        if self.command_subprocess.poll() == None:
+            self.command_subprocess.kill()
+            
+        self.command_subprocess = None
+                
     def OnDestroy (self, evt):
         # Cleanup Timer
-        self.timer.Stop()
+        self.command_timer.Stop()
         
         # Let the event pass
         evt.Skip()
-        
-    def OnTimer (self, evt):
-        self.message = b''
-        try:
-            if self.socket:
-                self.message = self.socket.recv(200)
-        except:
-            pass
-            
-        # See if there are any incoming messages
-        if len(self.message):
-            #print (self.message)
-            # Find the message of interest.  Discard anything before it.  Preserve everything after it
-            r = re.search(STX + b"ABSC:([0-9]{2}):([0-9]{2}):([0-9]{1})" + ETX + b"(.*)", self.message)
-            if r:
-                bus, material, tally, self.message = r.groups()
-                
-                # Which radio button do we need to update?
-                bus_radio = None
-                if bus == b"12":
-                    bus_radio = self.AUX_radio
-                elif bus == b"02":
-                    bus_radio = self.PGM_radio
-                elif bus == b"03":
-                    bus_radio = self.PVW_radio
-                
-                # Set the radio button
-                if bus_radio and (material in self.inputList):
-                    bus_radio.SetSelection(self.inputList.index(material))
-                    
-        # Send the next request
-        self.requestList.rotate()
-        c = STX + b"QBSC:" + self.requestList[0] + ETX
-        try:
-            if self.socket:
-                self.socket.sendall(c)
-        except:
-            pass
         
