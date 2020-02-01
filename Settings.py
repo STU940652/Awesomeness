@@ -12,8 +12,8 @@ Config.add_section('KiPro')
 Config.set('KiPro', 'ip', '')
 
 Config.add_section('ATEM')
-Config.set('ATEM', 'StartCommand', 'cmd /c pause')
-Config.set('ATEM', 'EndCommand', 'cmd /c echo Done')
+Config.set('ATEM', 'StartCommand', 'cmd /c echo Starting')
+Config.set('ATEM', 'EndCommand', 'cmd /c echo Ending')
 
 Config.add_section('projector')
 Config.set('projector', 'ip', '')
