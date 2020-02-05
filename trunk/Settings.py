@@ -12,6 +12,7 @@ Config.add_section('KiPro')
 Config.set('KiPro', 'ip', '')
 
 Config.add_section('ATEM')
+Config.set('ATEM', 'InitCommand', 'cmd /c echo Init')
 Config.set('ATEM', 'StartCommand', 'cmd /c echo Starting')
 Config.set('ATEM', 'EndCommand', 'cmd /c echo Ending')
 

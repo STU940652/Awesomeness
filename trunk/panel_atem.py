@@ -38,7 +38,14 @@ class PanelATEM (wx.lib.scrolledpanel.ScrolledPanel):
         self.Bind(wx.EVT_TIMER, self.OnCleanup, self.command_timer)
         
         self.command_subprocess = None
+        
+        self.OnInit()
 
+    def OnInit (self, evt=None):
+        self.OnCleanup()
+        self.command_subprocess = subprocess.Popen(args=Settings.Config['ATEM']['InitCommand'])
+        self.command_timer.StartOnce(5000)
+        
     def OnStart (self, evt=None):
         self.OnCleanup()
         self.command_subprocess = subprocess.Popen(args=Settings.Config['ATEM']['StartCommand'])
